@@ -1,0 +1,47 @@
+@import 'tailwindcss';
+
+@theme {
+	--color-brand-50: #f0fdf4;
+	--color-brand-100: #dcfce7;
+	--color-brand-200: #bbf7d0;
+	--color-brand-500: #22c55e;
+	--color-brand-600: #16a34a;
+	--color-brand-700: #15803d;
+	--color-brand-800: #166534;
+
+	--color-sukses: #16a34a;
+	--color-peringatan: #d97706;
+	--color-bahaya: #dc2626;
+	--color-info: #2563eb;
+
+	--color-ink: #0f1f17;
+	--color-muted: #5b6b62;
+	--color-surface: #f3f7f4;
+	--color-surface-elevated: #ffffff;
+
+	--font-sans: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif;
+	--font-display: 'Fraunces', ui-serif, Georgia, serif;
+	--font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+	--radius-card: 0.75rem;
+}
+
+@layer base {
+	html {
+		font-family: var(--font-sans);
+		color: var(--color-ink);
+		background: var(--color-surface);
+	}
+}
+
+@media print {
+	.tanpa-cetak {
+		display: none !important;
+	}
+	@page {
+		margin: 8mm;
+	}
+	body {
+		print-color-adjust: exact;
+	}
+}

@@ -1,0 +1,51 @@
+<script lang="ts">
+	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
+	import { filterNavigasi } from '$lib/components/layout/nav-items';
+	import { auth } from '$lib/stores/auth.svelte';
+
+	const grupTampil = $derived(auth.user ? filterNavigasi(auth.user.role) : []);
+</script>
+
+<aside class="tanpa-cetak flex w-60 shrink-0 flex-col border-r border-brand-100 bg-white">
+	<div class="border-b border-brand-100 px-4 py-4">
+		<p class="font-[family-name:var(--font-display)] text-lg font-bold tracking-tight text-brand-800">
+			PKB Web
+		</p>
+		{#if auth.user}
+			<p class="mt-0.5 truncate text-xs text-[var(--color-muted)]">{auth.user.role}</p>
+		{/if}
+	</div>
+
+	<nav class="flex flex-1 flex-col gap-5 overflow-y-auto p-3">
+		{#each grupTampil as grup (grup.label)}
+			<div>
+				<p class="mb-1.5 px-2 text-[0.65rem] font-semibold tracking-wider text-slate-400 uppercase">
+					{grup.label}
+				</p>
+				<ul class="space-y-0.5">
+					{#each grup.items as item (item.href)}
+						{@const aktif =
+							page.url.pathname === item.href || page.url.pathname.startsWith(item.href + '/')}
+						<li>
+							<a
+								href={resolve(
+									...( [item.href, {}] as unknown as Parameters<typeof resolve> )
+								)}
+								class={[
+									'block rounded-md px-2.5 py-1.5 text-sm transition-colors',
+									aktif
+										? 'bg-brand-50 font-semibold text-brand-800'
+										: 'text-slate-700 hover:bg-slate-50'
+								]}
+								aria-current={aktif ? 'page' : undefined}
+							>
+								{item.label}
+							</a>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		{/each}
+	</nav>
+</aside>
