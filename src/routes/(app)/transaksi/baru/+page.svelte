@@ -2,6 +2,8 @@
 	import Field from '$lib/components/form/Field.svelte';
 	import AsyncCombobox from '$lib/components/form/AsyncCombobox.svelte';
 	import CurrencyInput from '$lib/components/form/CurrencyInput.svelte';
+	import NumberInput from '$lib/components/form/NumberInput.svelte';
+	import PercentInput from '$lib/components/form/PercentInput.svelte';
 	import StokKurangModal from '$lib/components/transaksi/StokKurangModal.svelte';
 	import RiwayatOutletModal from '$lib/components/transaksi/RiwayatOutletModal.svelte';
 	import { daftarBarang, batchTersedia, type BatchTersediaItem } from '$lib/api/barang';
@@ -394,10 +396,10 @@
 			/>
 		</Field>
 		<Field label="Disc1 global %" forId="d1g">
-			<input id="d1g" class="w-full rounded-lg border px-3 py-2 text-sm" bind:value={disc1G} />
+			<PercentInput id="d1g" class="w-full" bind:value={disc1G} />
 		</Field>
 		<Field label="PPN %" forId="ppn">
-			<input id="ppn" class="w-full rounded-lg border px-3 py-2 text-sm" bind:value={ppn} />
+			<PercentInput id="ppn" class="w-full" bind:value={ppn} max={100} />
 		</Field>
 	</section>
 
@@ -440,13 +442,7 @@
 						{/if}
 					</Field>
 					<Field label="Qty" required forId={`qty-${idx}`}>
-						<input
-							id={`qty-${idx}`}
-							type="number"
-							min="1"
-							class="w-full rounded-lg border px-3 py-2 text-sm"
-							bind:value={row.qty}
-						/>
+						<NumberInput id={`qty-${idx}`} min={1} bind:value={row.qty} />
 					</Field>
 					<Field label="Harga (channel)" forId={`hrg-${idx}`}>
 						<CurrencyInput id={`hrg-${idx}`} bind:value={row.harga} />
@@ -454,13 +450,13 @@
 				</div>
 				<div class="grid gap-2 md:grid-cols-3 lg:grid-cols-6">
 					<Field label="Disc1 %" forId={`d1-${idx}`}>
-						<input id={`d1-${idx}`} class="w-full rounded border px-2 py-1.5 text-sm" bind:value={row.disc1} />
+						<PercentInput id={`d1-${idx}`} class="w-full" bind:value={row.disc1} />
 					</Field>
 					<Field label="Disc2 %" forId={`d2-${idx}`}>
-						<input id={`d2-${idx}`} class="w-full rounded border px-2 py-1.5 text-sm" bind:value={row.disc2} />
+						<PercentInput id={`d2-${idx}`} class="w-full" bind:value={row.disc2} />
 					</Field>
 					<Field label="Disc3 %" forId={`d3-${idx}`}>
-						<input id={`d3-${idx}`} class="w-full rounded border px-2 py-1.5 text-sm" bind:value={row.disc3} />
+						<PercentInput id={`d3-${idx}`} class="w-full" bind:value={row.disc3} />
 					</Field>
 					<Field label="Promo 1" forId={`p1-${idx}`}>
 						<AsyncCombobox id={`p1-${idx}`} bind:value={row.promo1} placeholder="Kode promo" onsearch={cariPromo} />

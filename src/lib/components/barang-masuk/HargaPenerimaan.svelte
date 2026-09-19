@@ -7,6 +7,7 @@
 		PPN_PERSEN_DEFAULT,
 		hitungHPP,
 		hitungHPPDenganPPN,
+		hitungNominalPPN,
 		hitungHargaChannel,
 		type MarkupTipe
 	} from '$lib/domain/pricing';
@@ -38,9 +39,11 @@
 	}: Props = $props();
 
 	const hpp = $derived(hitungHPP(harga, disc1, disc2, disc3));
+	const ppnNominal = $derived(hitungNominalPPN(hpp, PPN_PERSEN_DEFAULT));
 	const hppPpn = $derived(hitungHPPDenganPPN(hpp, PPN_PERSEN_DEFAULT));
 	const hargaMt = $derived(hitungHargaChannel(harga, markupMtAmt, markupMtType));
 	const hargaGt = $derived(hitungHargaChannel(harga, markupGtAmt, markupGtType));
+	const hppNolKarenaDiskon = $derived(hpp === '0.00' && harga !== '0.00' && harga !== '');
 </script>
 
 {#snippet tipeMarkup(id: string, value: MarkupTipe, label: string, onchange: (v: MarkupTipe) => void)}
@@ -95,10 +98,24 @@
 		</Field>
 	</div>
 
-	<div class="rounded-lg bg-slate-50 px-3 py-2">
-		<p class="text-xs text-muted">HPP (hasil, termasuk PPN {PPN_PERSEN_DEFAULT}%)</p>
-		<p class="font-mono text-base font-semibold tabular-nums text-ink">{formatRupiah(hppPpn)}</p>
-		<p class="text-xs text-muted">Sebelum PPN {formatRupiah(hpp)}</p>
+	<div class="space-y-1 rounded-lg bg-slate-50 px-3 py-2 text-sm">
+		<div class="flex justify-between gap-3 tabular-nums">
+			<span class="text-muted">HPP setelah diskon</span>
+			<span class="font-mono">{formatRupiah(hpp)}</span>
+		</div>
+		<div class="flex justify-between gap-3 tabular-nums">
+			<span class="text-muted">PPN {PPN_PERSEN_DEFAULT}%</span>
+			<span class="font-mono">{formatRupiah(ppnNominal)}</span>
+		</div>
+		<div class="flex justify-between gap-3 font-semibold tabular-nums text-ink">
+			<span>HPP termasuk PPN</span>
+			<span class="font-mono">{formatRupiah(hppPpn)}</span>
+		</div>
+		{#if hppNolKarenaDiskon}
+			<p class="text-xs text-peringatan">
+				HPP Rp 0 karena disc 100%, jadi PPN 11% juga Rp 0. Harga MT/GT tidak ditambah PPN.
+			</p>
+		{/if}
 	</div>
 </section>
 

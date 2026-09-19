@@ -33,6 +33,10 @@ export function hitungHPPDenganPPN(hpp: string, ppnPersen = PPN_PERSEN_DEFAULT):
 	return roundMoney(toNum(hpp) * (1 + toNum(ppnPersen) / 100));
 }
 
+export function hitungNominalPPN(hpp: string, ppnPersen = PPN_PERSEN_DEFAULT): string {
+	return roundMoney(toNum(hpp) * (toNum(ppnPersen) / 100));
+}
+
 /** Markup dihitung dari harga list, bukan dari HPP. */
 export function hitungHargaChannel(harga: string, markupAmount: string, tipe: MarkupTipe): string {
 	const h = toNum(harga);

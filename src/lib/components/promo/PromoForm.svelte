@@ -1,7 +1,9 @@
 <script lang="ts">
 	import Field from '$lib/components/form/Field.svelte';
+	import NumberInput from '$lib/components/form/NumberInput.svelte';
 	import Combobox from '$lib/components/form/Combobox.svelte';
 	import CurrencyInput from '$lib/components/form/CurrencyInput.svelte';
+	import PercentInput from '$lib/components/form/PercentInput.svelte';
 	import {
 		TIPE_PROMO_OPTIONS,
 		type PromoCreateBody,
@@ -137,22 +139,18 @@
 	{#if tipe === 'buy_x_get_y'}
 		<div class="grid grid-cols-2 gap-3">
 			<Field label="Beli (X)" required forId="buy" error={errors.buy_qty}>
-				<input
+				<NumberInput
 					id="buy"
-					type="number"
-					min="1"
-					class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+					min={1}
 					bind:value={buyQty}
 					disabled={disabled || menyimpan}
 					required
 				/>
 			</Field>
 			<Field label="Gratis (Y)" required forId="get" error={errors.get_qty}>
-				<input
+				<NumberInput
 					id="get"
-					type="number"
-					min="1"
-					class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+					min={1}
 					bind:value={getQty}
 					disabled={disabled || menyimpan}
 					required
@@ -161,11 +159,9 @@
 		</div>
 	{:else if tipe === 'bonus_qty'}
 		<Field label="Bonus qty" required forId="bonus" error={errors.bonus_qty}>
-			<input
+			<NumberInput
 				id="bonus"
-				type="number"
-				min="1"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+				min={1}
 				bind:value={bonusQty}
 				disabled={disabled || menyimpan}
 				required
@@ -173,12 +169,12 @@
 		</Field>
 	{:else if tipe === 'percentage_discount'}
 		<Field label="Diskon %" required forId="pct" error={errors.discount_percentage} hint="0,01–100 (divalidasi server)">
-			<input
+			<PercentInput
 				id="pct"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+				class="w-full"
 				bind:value={discountPercentage}
+				min={0.01}
 				disabled={disabled || menyimpan}
-				required
 			/>
 		</Field>
 	{:else if tipe === 'fixed_discount'}
@@ -212,14 +208,7 @@
 
 	<div class="grid grid-cols-2 gap-3">
 		<Field label="Min qty" forId="minqty" error={errors.min_qty}>
-			<input
-				id="minqty"
-				type="number"
-				min="1"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-				bind:value={minQty}
-				disabled={disabled || menyimpan}
-			/>
+			<NumberInput id="minqty" min={1} bind:value={minQty} disabled={disabled || menyimpan} />
 		</Field>
 		<Field label="Min amount" forId="minamt" error={errors.min_amount}>
 			<CurrencyInput id="minamt" bind:value={minAmount} disabled={disabled || menyimpan} />
@@ -231,10 +220,14 @@
 			id="maxapp"
 			type="number"
 			min="1"
+			inputmode="decimal"
 			class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 			bind:value={maxApplications}
 			disabled={disabled || menyimpan}
 			placeholder="Opsional"
+			onfocus={() => {
+				if (maxApplications === '0') maxApplications = '';
+			}}
 		/>
 	</Field>
 	<Field label="Kode barang (opsional)" forId="sku" error={errors.kode_barang}>

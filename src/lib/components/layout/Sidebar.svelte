@@ -36,9 +36,9 @@
 <aside
 	id="app-sidebar"
 	class={[
-		'tanpa-cetak flex w-60 shrink-0 flex-col border-r border-brand-100 bg-white',
+		'tanpa-cetak flex w-60 shrink-0 flex-col overflow-hidden border-r border-brand-100 bg-white',
 		'fixed top-14 bottom-0 left-0 z-40 shadow-xl transition-transform duration-200',
-		'lg:static lg:z-auto lg:shadow-none lg:translate-x-0',
+		'lg:static lg:z-auto lg:h-full lg:shadow-none lg:translate-x-0',
 		open ? 'translate-x-0' : '-translate-x-full'
 	]}
 >

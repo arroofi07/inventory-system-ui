@@ -46,6 +46,15 @@ export function parseRupiah(mentah: string): string {
 	return `${neg ? '-' : ''}${intPart}.${frac}`;
 }
 
+/** True bila tampilan/input angka bernilai nol (0, 0.00, 0,00). String kosong bukan nol. */
+export function isZeroNumeric(raw: string | number | null | undefined): boolean {
+	if (raw === null || raw === undefined) return false;
+	const s = String(raw).trim();
+	if (s === '' || s === '-' || s === '.' || s === ',') return false;
+	const canon = parseRupiah(s);
+	return canon === '0.00' || canon === '-0.00';
+}
+
 /** Format tampilan id-ID. Menerima string desimal atau number kecil. */
 export function formatRupiah(value: string | number, opts: FormatRupiahOpts = {}): string {
 	const desimal = opts.desimal ?? 2;
@@ -64,4 +73,62 @@ export function formatRupiah(value: string | number, opts: FormatRupiahOpts = {}
 	const body = desimal > 0 ? `${denganRibuan},${frac}` : denganRibuan;
 	const signed = neg ? `-${body}` : body;
 	return opts.tanpaSimbol ? signed : `Rp ${signed}`;
+}
+
+/**
+ * Format ketikan harga id-ID: ribuan bertitik, desimal berkoma (maks 2 digit).
+ * Tidak memaksa ",00" supaya koma masih bisa diketik.
+ */
+export function formatRupiahKetikan(mentah: string): string {
+	let s = mentah.replace(/Rp\.?/gi, '').replace(/\s/g, '');
+	if (!s) return '';
+	const neg = s.startsWith('-');
+	if (neg) s = s.slice(1);
+	if (!s) return neg ? '-' : '';
+
+	const hasComma = s.includes(',');
+	let intDigits: string;
+	let frac: string | undefined;
+	let keepComma = false;
+
+	if (hasComma) {
+		const i = s.indexOf(',');
+		intDigits = s.slice(0, i).replace(/\D/g, '');
+		frac = s.slice(i + 1).replace(/\D/g, '').slice(0, 2);
+		keepComma = true;
+	} else {
+		const dotted = s.replace(/[^\d.]/g, '');
+		const parts = dotted.split('.');
+		if (parts.length === 2 && parts[1].length >= 1 && parts[1].length <= 2) {
+			intDigits = parts[0].replace(/\D/g, '');
+			frac = parts[1];
+			keepComma = true;
+		} else {
+			intDigits = s.replace(/\D/g, '');
+		}
+	}
+
+	intDigits = intDigits.replace(/^0+(?=\d)/, '');
+	if (intDigits === '') {
+		if (!keepComma) return neg ? '-' : '';
+		intDigits = '0';
+	}
+
+	const intFmt = intDigits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+	const body = keepComma ? `${intFmt},${frac ?? ''}` : intFmt;
+	return `${neg ? '-' : ''}${body}`;
+}
+
+/** Geser karet setelah pemisah ribuan disisipkan, berdasarkan digit/koma sebelum karet. */
+export function posisiKaretSetelahFormat(sebelum: string, karet: number, sesudah: string): number {
+	const sig = (sebelum.slice(0, Math.max(0, karet)).match(/[\d,]/g) ?? []).length;
+	if (sig <= 0) return 0;
+	let seen = 0;
+	for (let i = 0; i < sesudah.length; i++) {
+		if (/[\d,]/.test(sesudah[i] ?? '')) {
+			seen += 1;
+			if (seen === sig) return i + 1;
+		}
+	}
+	return sesudah.length;
 }

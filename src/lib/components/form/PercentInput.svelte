@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { isZeroNumeric } from '$lib/domain/format';
+
 	interface Props {
 		/** Nilai persen sebagai string desimal, misalnya "11.00". */
 		value?: string;
@@ -18,6 +20,9 @@
 		class: className = 'w-28'
 	}: Props = $props();
 
+	let draf = $state<string | null>(null);
+	const tampilan = $derived(draf ?? value);
+
 	function normalize(raw: string): string {
 		const cleaned = raw.replace(',', '.').replace(/[^\d.]/g, '');
 		const n = Number.parseFloat(cleaned);
@@ -26,12 +31,23 @@
 		return String(clamped);
 	}
 
+	function onFocus() {
+		if (isZeroNumeric(value) || isZeroNumeric(tampilan)) {
+			draf = '';
+		}
+	}
+
 	function onInput(e: Event) {
-		value = (e.currentTarget as HTMLInputElement).value;
+		draf = (e.currentTarget as HTMLInputElement).value;
+		if (draf.trim() !== '') {
+			value = draf.replace(',', '.');
+		}
 	}
 
 	function onBlur() {
-		value = normalize(value);
+		const raw = draf ?? tampilan;
+		value = raw.trim() === '' ? String(min) : normalize(raw);
+		draf = null;
 	}
 </script>
 
@@ -42,7 +58,8 @@
 		type="text"
 		inputmode="decimal"
 		class="w-full rounded-lg border border-slate-300 py-2 pl-2 pr-8 text-right font-mono text-sm tabular-nums focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
-		{value}
+		value={tampilan}
+		onfocus={onFocus}
 		oninput={onInput}
 		onblur={onBlur}
 	/>

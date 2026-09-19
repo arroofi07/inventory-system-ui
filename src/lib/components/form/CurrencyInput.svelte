@@ -1,5 +1,12 @@
 <script lang="ts">
-	import { formatRupiah, parseRupiah } from '$lib/domain/format';
+	import { tick } from 'svelte';
+	import {
+		formatRupiah,
+		formatRupiahKetikan,
+		isZeroNumeric,
+		parseRupiah,
+		posisiKaretSetelahFormat
+	} from '$lib/domain/format';
 
 	interface Props {
 		/** Nilai string desimal kanonik, misalnya "20000.00". */
@@ -18,29 +25,29 @@
 		placeholder = '0,00'
 	}: Props = $props();
 
-	let tampilan = $state(formatRupiah(value, { tanpaSimbol: true }));
-	let sedangFokus = $state(false);
+	let draf = $state<string | null>(null);
+	const tampilan = $derived(draf ?? formatRupiah(value, { tanpaSimbol: true }));
 
-	$effect(() => {
-		if (!sedangFokus) {
-			tampilan = formatRupiah(value, { tanpaSimbol: true });
-		}
-	});
-
-	function onInput(e: Event) {
-		const mentah = (e.currentTarget as HTMLInputElement).value;
-		tampilan = mentah;
-		value = parseRupiah(mentah);
+	async function onInput(e: Event) {
+		const el = e.currentTarget as HTMLInputElement;
+		const karet = el.selectionStart ?? el.value.length;
+		const formatted = formatRupiahKetikan(el.value);
+		const nextCaret = posisiKaretSetelahFormat(el.value, karet, formatted);
+		draf = formatted;
+		value = formatted === '' || formatted === '-' ? '0.00' : parseRupiah(formatted);
+		await tick();
+		el.setSelectionRange(nextCaret, nextCaret);
 	}
 
 	function onFocus() {
-		sedangFokus = true;
+		if (isZeroNumeric(value) || isZeroNumeric(tampilan)) {
+			draf = '';
+		}
 	}
 
 	function onBlur() {
-		sedangFokus = false;
-		value = parseRupiah(tampilan);
-		tampilan = formatRupiah(value, { tanpaSimbol: true });
+		value = parseRupiah(draf ?? tampilan);
+		draf = null;
 	}
 </script>
 
@@ -53,6 +60,7 @@
 		{name}
 		{disabled}
 		{placeholder}
+		lang="id-ID"
 		type="text"
 		inputmode="decimal"
 		autocomplete="off"

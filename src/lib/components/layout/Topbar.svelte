@@ -20,7 +20,7 @@
 </script>
 
 <header
-	class="tanpa-cetak sticky top-0 z-50 flex h-14 items-center justify-between gap-2 border-b border-brand-100 bg-white px-3 sm:gap-3 sm:px-4"
+	class="tanpa-cetak sticky top-0 z-50 flex h-14 shrink-0 items-center justify-between gap-2 border-b border-brand-100 bg-white px-3 sm:gap-3 sm:px-4"
 >
 	<div class="flex min-w-0 flex-1 items-center gap-2">
 		<button

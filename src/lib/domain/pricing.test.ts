@@ -3,7 +3,8 @@ import {
 	hitungAgingMonth,
 	hitungHargaChannel,
 	hitungHPP,
-	hitungHPPDenganPPN
+	hitungHPPDenganPPN,
+	hitungNominalPPN
 } from './pricing';
 
 describe('hitungHPP berantai', () => {
@@ -16,6 +17,14 @@ describe('hitungHPP berantai', () => {
 	it('tanpa diskon + PPN 11%', () => {
 		expect(hitungHPP('10000.00', '0', '0', '0')).toBe('10000.00');
 		expect(hitungHPPDenganPPN('10000.00')).toBe('11100.00');
+		expect(hitungNominalPPN('10000.00')).toBe('1100.00');
+	});
+
+	it('disc 100% menolkan HPP sehingga PPN juga 0', () => {
+		const hpp = hitungHPP('10000.00', '5', '30', '100');
+		expect(hpp).toBe('0.00');
+		expect(hitungNominalPPN(hpp)).toBe('0.00');
+		expect(hitungHPPDenganPPN(hpp)).toBe('0.00');
 	});
 });
 

@@ -3,6 +3,7 @@
 	import Field from '$lib/components/form/Field.svelte';
 	import AsyncCombobox from '$lib/components/form/AsyncCombobox.svelte';
 	import CurrencyInput from '$lib/components/form/CurrencyInput.svelte';
+	import NumberInput from '$lib/components/form/NumberInput.svelte';
 	import {
 		detailTransaksi,
 		tambahItemsTransaksi,
@@ -333,13 +334,7 @@
 							</select>
 						</Field>
 						<Field label="Qty" forId="add-qty">
-							<input
-								id="add-qty"
-								type="number"
-								min="1"
-								class="w-full rounded-lg border px-3 py-2 text-sm"
-								bind:value={qty}
-							/>
+							<NumberInput id="add-qty" min={1} bind:value={qty} />
 						</Field>
 						<Field label="Harga" forId="add-hrg">
 							<CurrencyInput id="add-hrg" bind:value={harga} />

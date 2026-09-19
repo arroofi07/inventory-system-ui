@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Field from '$lib/components/form/Field.svelte';
+	import NumberInput from '$lib/components/form/NumberInput.svelte';
 	import AsyncCombobox from '$lib/components/form/AsyncCombobox.svelte';
 	import BarangForm from '$lib/components/barang/BarangForm.svelte';
 	import HargaPenerimaan from '$lib/components/barang-masuk/HargaPenerimaan.svelte';
@@ -203,14 +204,7 @@
 				/>
 			</Field>
 			<Field label="Qty" required forId="qty" error={errors.qty}>
-				<input
-					id="qty"
-					type="number"
-					min="1"
-					class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-					bind:value={qty}
-					required
-				/>
+				<NumberInput id="qty" min={1} bind:value={qty} required />
 			</Field>
 			<Field label="Aging (bulan)" forId="aging" hint="Otomatis dari tanggal masuk ke exp">
 				<input

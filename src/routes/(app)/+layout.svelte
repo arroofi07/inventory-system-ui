@@ -49,15 +49,15 @@
 	<p class="p-6 text-sm text-[var(--color-muted)]">Memuat sesi…</p>
 {:else if auth.terautentikasi}
 	<AppShell>
-		<div class="flex min-h-dvh">
+		<div class="flex h-full min-h-0">
 			<Sidebar bind:open={navOpen} />
-			<div class="flex min-w-0 flex-1 flex-col overflow-x-clip">
+			<div class="flex min-h-0 min-w-0 flex-1 flex-col">
 				<Topbar title={judulHalaman} bind:open={navOpen} />
 				<main
-					class="flex-1 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:p-6"
+					class="min-h-0 flex-1 overflow-y-auto overflow-x-clip p-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:p-6"
 				>{@render children()}</main>
 			</div>
 		</div>
-		<Toast />
 	</AppShell>
+	<Toast />
 {/if}
