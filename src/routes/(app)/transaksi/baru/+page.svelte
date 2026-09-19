@@ -337,19 +337,24 @@
 	}
 </script>
 
-<div class="space-y-4">
-	<a href={resolveAppPath('/transaksi')} class="text-sm text-brand-700 underline">← Daftar transaksi</a>
-	<header class="flex flex-wrap items-end justify-between gap-3">
-		<div>
+<div class="space-y-4 pb-24 md:pb-0">
+	<a href={resolveAppPath('/transaksi')} class="inline-flex min-h-11 items-center text-sm text-brand-700 underline md:min-h-0"
+		>← Daftar transaksi</a
+	>
+	<header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+		<div class="hidden md:block">
 			<h1 class="font-display text-2xl text-ink">Transaksi baru</h1>
 			<p class="text-sm text-muted">
 				Angka resmi dari pratinjau server. Estimasi browser hanya bantuan.
 			</p>
 		</div>
+		<p class="text-sm text-muted md:hidden">
+			Angka resmi dari pratinjau server. Estimasi browser hanya bantuan.
+		</p>
 		{#if pelangganKode}
 			<button
 				type="button"
-				class="rounded border border-slate-300 px-3 py-1.5 text-sm"
+				class="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm sm:min-h-0 sm:py-1.5"
 				onclick={() => (riwayatOpen = true)}>Riwayat outlet</button
 			>
 		{/if}
@@ -399,7 +404,7 @@
 	<section class="space-y-3">
 		<div class="flex items-center justify-between">
 			<h2 class="text-sm font-semibold text-slate-800">Item</h2>
-			<button type="button" class="text-sm text-brand-700 underline" onclick={tambahBaris}
+			<button type="button" class="min-h-11 px-1 text-sm text-brand-700 underline md:min-h-0" onclick={tambahBaris}
 				>+ Tambah baris</button
 			>
 		</div>
@@ -512,23 +517,27 @@
 		</div>
 	</section>
 
-	<div class="flex flex-wrap gap-2">
-		<button
-			type="button"
-			class="rounded border border-slate-300 px-4 py-2 text-sm"
-			disabled={loadingPratinjau || menyimpan}
-			onclick={() => void jalankanPratinjau()}
-		>
-			{loadingPratinjau ? 'Menghitung…' : 'Pratinjau'}
-		</button>
-		<button
-			type="button"
-			class="rounded bg-slate-900 px-4 py-2 text-sm text-white disabled:opacity-50"
-			disabled={menyimpan || loadingPratinjau}
-			onclick={() => void sebelumSubmit(() => void simpan())}
-		>
-			{menyimpan ? 'Menyimpan…' : 'Simpan pending'}
-		</button>
+	<div
+		class="sticky bottom-0 z-10 -mx-4 mt-4 border-t border-slate-200 bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:mx-0 md:border-0 md:bg-transparent md:p-0"
+	>
+		<div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+			<button
+				type="button"
+				class="min-h-11 rounded-lg border border-slate-300 px-4 py-2 text-sm sm:min-h-0"
+				disabled={loadingPratinjau || menyimpan}
+				onclick={() => void jalankanPratinjau()}
+			>
+				{loadingPratinjau ? 'Menghitung…' : 'Pratinjau'}
+			</button>
+			<button
+				type="button"
+				class="min-h-11 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 sm:min-h-0"
+				disabled={menyimpan || loadingPratinjau}
+				onclick={() => void sebelumSubmit(() => void simpan())}
+			>
+				{menyimpan ? 'Menyimpan…' : 'Simpan pending'}
+			</button>
+		</div>
 	</div>
 </div>
 

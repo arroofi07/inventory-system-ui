@@ -42,11 +42,10 @@
 	];
 
 	const columns: ColumnDef<Row>[] = [
-		{ id: 'id', header: 'ID', accessor: 'id' },
 		{
 			id: 'no',
 			header: 'No',
-			format: (r) => r.no_transaksi ?? '—'
+			format: (r) => r.no_transaksi ?? `#${r.id}`
 		},
 		{ id: 'tgl', header: 'Tanggal', accessor: 'tanggal' },
 		{
@@ -57,15 +56,17 @@
 		{ id: 'approval', header: 'Approval', accessor: 'status_approval' },
 		{ id: 'bayar', header: 'Bayar', accessor: 'status_pembayaran' },
 		{
-			id: 'qty',
-			header: 'Qty',
-			format: (r) => `${r.total_qty_ditagih}/${r.total_qty_keluar}`
-		},
-		{
 			id: 'total',
 			header: 'Total akhir',
 			format: (r) => formatRupiah(r.total_akhir)
-		}
+		},
+		{
+			id: 'qty',
+			header: 'Qty',
+			format: (r) => `${r.total_qty_ditagih}/${r.total_qty_keluar}`,
+			hideOnMobile: true
+		},
+		{ id: 'id', header: 'ID', accessor: 'id', hideOnMobile: true }
 	];
 
 	async function muat() {
@@ -116,8 +117,8 @@
 	}
 </script>
 
-<div class="space-y-4">
-	<header class="flex flex-wrap items-end justify-between gap-3">
+<div class="space-y-4 {bisaBuat ? 'pb-20 md:pb-0' : ''}">
+	<header class="hidden items-end justify-between gap-3 md:flex">
 		<div>
 			<h1 class="font-display text-2xl text-ink">Transaksi</h1>
 			<p class="text-sm text-muted">
@@ -131,6 +132,10 @@
 			>
 		{/if}
 	</header>
+
+	<p class="text-sm text-muted md:hidden">
+		Sales hanya melihat order sendiri. Tidak ada edit/hapus setelah dibuat.
+	</p>
 
 	<FilterBar onreset={resetFilter}>
 		<Field label="Cari" forId="q">
@@ -168,4 +173,17 @@
 		total={meta.total}
 		onpage={(p) => (page = p)}
 	/>
+
+	{#if bisaBuat}
+		<div
+			class="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden"
+		>
+			<a
+				href={resolveAppPath('/transaksi/baru')}
+				class="flex min-h-11 items-center justify-center rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white"
+			>
+				Transaksi baru
+			</a>
+		</div>
+	{/if}
 </div>

@@ -145,60 +145,64 @@
 </script>
 
 <div class="space-y-4">
-	<a href={resolveAppPath('/transaksi')} class="text-sm text-brand-700 underline">← Daftar transaksi</a>
+	<a href={resolveAppPath('/transaksi')} class="inline-flex min-h-11 items-center text-sm text-brand-700 underline md:min-h-0"
+		>← Daftar transaksi</a
+	>
 
 	{#if loading}
 		<p class="text-sm text-slate-500">Memuat…</p>
 	{:else if !trx}
 		<p class="text-sm text-slate-500">Transaksi tidak ditemukan.</p>
 	{:else}
-		<header class="flex flex-wrap items-start justify-between gap-3">
-			<div>
-				<h1 class="font-display text-2xl text-ink">
+		<header class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+			<div class="min-w-0">
+				<h1 class="font-display text-xl text-ink sm:text-2xl">
 					Transaksi #{trx.id}
 					{#if trx.no_transaksi}
-						<span class="text-lg text-muted">· {trx.no_transaksi}</span>
+						<span class="block text-base text-muted sm:inline sm:text-lg">· {trx.no_transaksi}</span>
 					{/if}
 				</h1>
-				<p class="text-sm text-muted">
+				<p class="mt-1 text-sm text-muted">
 					{trx.tanggal} · {trx.kode_pelanggan} — {trx.nama_pelanggan} · {trx.channel_outlet}
 				</p>
 			</div>
-			<div class="text-right text-sm">
-				<p>
+			<div class="flex flex-col gap-2 text-sm sm:items-end sm:text-right">
+				<p class="flex flex-wrap gap-1">
 					<span class="rounded bg-slate-100 px-2 py-0.5">{trx.status_approval}</span>
-					<span class="ml-1 rounded bg-slate-100 px-2 py-0.5">{trx.status_pembayaran}</span>
+					<span class="rounded bg-slate-100 px-2 py-0.5">{trx.status_pembayaran}</span>
 				</p>
-				<p class="mt-1 font-semibold">{formatRupiah(trx.total_akhir)}</p>
+				<p class="font-semibold">{formatRupiah(trx.total_akhir)}</p>
 				{#if trx.status_approval === 'approved' && auth.punyaIzin('faktur.cetak')}
-					<a
-						class="mt-2 inline-block text-brand-700 underline"
-						href={resolveAppPath(`/faktur/${trx.id}`)}
-						target="_blank"
-						rel="noopener"
-					>
-						Cetak faktur
-					</a>
-					<button
-						type="button"
-						class="mt-2 ml-3 inline-block text-brand-700 underline disabled:opacity-60"
-						onclick={() => void unduhPdf()}
-						disabled={mengunduhPdf}
-					>
-						{mengunduhPdf ? 'Mengunduh…' : 'Unduh PDF'}
-					</button>
+					<div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
+						<a
+							class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 px-3 text-sm text-brand-800 sm:min-h-0 sm:border-0 sm:px-0 sm:underline"
+							href={resolveAppPath(`/faktur/${trx.id}`)}
+							target="_blank"
+							rel="noopener"
+						>
+							Cetak faktur
+						</a>
+						<button
+							type="button"
+							class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 px-3 text-sm text-brand-800 disabled:opacity-60 sm:min-h-0 sm:border-0 sm:px-0 sm:underline"
+							onclick={() => void unduhPdf()}
+							disabled={mengunduhPdf}
+						>
+							{mengunduhPdf ? 'Mengunduh…' : 'Unduh PDF'}
+						</button>
+					</div>
 				{/if}
 			</div>
 		</header>
 
-		<section class="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
+		<section class="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
 			<div>
 				<p class="text-slate-500">Area</p>
 				<p>{trx.area}</p>
 			</div>
 			<div>
 				<p class="text-slate-500">Alamat</p>
-				<p>{trx.alamat ?? '—'}</p>
+				<p class="break-words">{trx.alamat ?? '—'}</p>
 			</div>
 			<div>
 				<p class="text-slate-500">DPP / PPN</p>
@@ -210,7 +214,49 @@
 			</div>
 		</section>
 
-		<section class="overflow-x-auto rounded-lg border border-slate-200">
+		<section class="space-y-2 md:hidden">
+			{#each trx.items ?? [] as it (it.id ?? it.kode_item + String(it.urutan))}
+				<article class="rounded-lg border border-slate-200 bg-white p-3 text-sm">
+					<p class="font-medium">{it.nama_item}</p>
+					<p class="text-xs text-slate-500">{it.kode_item}</p>
+					<dl class="mt-2 space-y-1">
+						<div class="flex justify-between gap-3">
+							<dt class="text-slate-500">Jumlah</dt>
+							<dd>{it.jumlah}</dd>
+						</div>
+						<div class="flex justify-between gap-3">
+							<dt class="text-slate-500">Qty keluar</dt>
+							<dd>{it.total_qty_keluar}</dd>
+						</div>
+						<div class="flex justify-between gap-3">
+							<dt class="text-slate-500">Harga</dt>
+							<dd>{formatRupiah(it.harga)}</dd>
+						</div>
+						<div class="flex justify-between gap-3">
+							<dt class="text-slate-500">Setelah disc</dt>
+							<dd>{formatRupiah(it.total_after_disc ?? '0')}</dd>
+						</div>
+						{#if it.batch_number || it.promo_diterapkan?.length}
+							<div class="flex justify-between gap-3">
+								<dt class="text-slate-500">Batch / promo</dt>
+								<dd class="text-right text-xs text-slate-600">
+									{#if it.batch_number}{it.batch_number}{/if}
+									{#if it.promo_diterapkan?.length}
+										<div>
+											{#each it.promo_diterapkan as p}
+												{p.kode_promo}{#if p.qty_bonus} (+{p.qty_bonus}){/if}
+											{/each}
+										</div>
+									{/if}
+								</dd>
+							</div>
+						{/if}
+					</dl>
+				</article>
+			{/each}
+		</section>
+
+		<section class="hidden overflow-x-auto rounded-lg border border-slate-200 md:block">
 			<table class="min-w-full text-left text-sm">
 				<thead class="bg-slate-50 text-slate-600">
 					<tr>
@@ -254,7 +300,7 @@
 				{#if !formTambahOpen}
 					<button
 						type="button"
-						class="rounded bg-slate-900 px-3 py-1.5 text-sm text-white"
+						class="min-h-11 w-full rounded-lg bg-slate-900 px-3 py-2 text-sm text-white sm:w-auto sm:min-h-0"
 						onclick={() => (formTambahOpen = true)}>Tambah item</button
 					>
 				{:else}
@@ -299,10 +345,10 @@
 							<CurrencyInput id="add-hrg" bind:value={harga} />
 						</Field>
 					</div>
-					<div class="mt-3 flex gap-2">
+					<div class="mt-3 flex flex-col gap-2 sm:flex-row">
 						<button
 							type="button"
-							class="rounded bg-slate-900 px-3 py-1.5 text-sm text-white disabled:opacity-50"
+							class="min-h-11 rounded-lg bg-slate-900 px-3 py-2 text-sm text-white disabled:opacity-50 sm:min-h-0 sm:py-1.5"
 							disabled={menyimpan}
 							onclick={() => void simpanTambah()}
 						>
@@ -310,7 +356,7 @@
 						</button>
 						<button
 							type="button"
-							class="rounded border px-3 py-1.5 text-sm"
+							class="min-h-11 rounded-lg border px-3 py-2 text-sm sm:min-h-0 sm:py-1.5"
 							onclick={() => (formTambahOpen = false)}>Batal</button
 						>
 					</div>

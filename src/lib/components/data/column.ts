@@ -5,4 +5,6 @@ export type ColumnDef<Row extends Record<string, unknown>> = {
 	align?: 'left' | 'right' | 'center';
 	sortable?: boolean;
 	format?: (row: Row) => string;
+	/** Sembunyikan kolom ini pada kartu mobile. */
+	hideOnMobile?: boolean;
 };

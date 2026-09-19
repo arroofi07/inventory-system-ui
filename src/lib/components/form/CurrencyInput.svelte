@@ -56,7 +56,7 @@
 		type="text"
 		inputmode="decimal"
 		autocomplete="off"
-		class="w-full rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-3 text-right font-mono text-sm tabular-nums focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-slate-50"
+		class="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-right font-mono text-base tabular-nums focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-slate-50 md:py-2 md:text-sm"
 		value={tampilan}
 		oninput={onInput}
 		onfocus={onFocus}

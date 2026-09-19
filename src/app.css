@@ -31,6 +31,15 @@
 		font-family: var(--font-sans);
 		color: var(--color-ink);
 		background: var(--color-surface);
+		-webkit-text-size-adjust: 100%;
+	}
+
+	@media (max-width: 767px) {
+		input,
+		select,
+		textarea {
+			font-size: 1rem;
+		}
 	}
 }
 

@@ -46,10 +46,61 @@
 		}
 		return '';
 	}
+
+	const judulCol = $derived(columns.find((c) => !c.hideOnMobile) ?? columns[0]);
+	const detailCols = $derived(columns.filter((c) => c !== judulCol && !c.hideOnMobile));
 </script>
 
 <div class="overflow-hidden rounded-[var(--radius-card)] border border-slate-200 bg-white">
-	<div class="overflow-x-auto">
+	{#if loading}
+		<div class="space-y-3 p-3 md:hidden">
+			{#each Array(4) as _, i (i)}
+				<Skeleton class="h-24 w-full" />
+			{/each}
+		</div>
+	{:else if rows.length === 0}
+		<div class="md:hidden">
+			<EmptyState title={emptyTitle} description={emptyDescription} />
+		</div>
+	{:else}
+		<ul class="divide-y divide-slate-100 md:hidden">
+			{#each rows as row, i (rowKey(row, i))}
+				<li>
+					{#if onrowclick}
+						<button
+							type="button"
+							class="flex w-full flex-col gap-1.5 px-3 py-3 text-left hover:bg-brand-50/60"
+							onclick={() => onrowclick(row)}
+						>
+							{#if judulCol}
+								<p class="font-semibold text-ink">{cellText(judulCol, row)}</p>
+							{/if}
+							{#each detailCols as col (col.id)}
+								<div class="flex items-start justify-between gap-3 text-sm">
+									<span class="shrink-0 text-muted">{col.header}</span>
+									<span class="text-right text-ink">{cellText(col, row)}</span>
+								</div>
+							{/each}
+						</button>
+					{:else}
+						<div class="flex flex-col gap-1.5 px-3 py-3">
+							{#if judulCol}
+								<p class="font-semibold text-ink">{cellText(judulCol, row)}</p>
+							{/if}
+							{#each detailCols as col (col.id)}
+								<div class="flex items-start justify-between gap-3 text-sm">
+									<span class="shrink-0 text-muted">{col.header}</span>
+									<span class="text-right text-ink">{cellText(col, row)}</span>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</li>
+			{/each}
+		</ul>
+	{/if}
+
+	<div class="hidden overflow-x-auto md:block">
 		<table class="min-w-full text-sm">
 			<thead class="bg-surface text-left text-xs font-semibold uppercase tracking-wide text-muted">
 				<tr>

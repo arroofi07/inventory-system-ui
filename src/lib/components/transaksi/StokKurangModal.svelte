@@ -27,12 +27,12 @@
 
 {#if open}
 	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+		class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="stok-kurang-title"
 	>
-		<div class="w-full max-w-lg rounded-lg bg-white p-4 shadow-lg">
+		<div class="w-full max-h-[90dvh] overflow-auto rounded-t-2xl bg-white p-4 shadow-lg sm:max-w-lg sm:rounded-lg">
 			<h2 id="stok-kurang-title" class="text-base font-semibold text-slate-900">Stok tidak cukup</h2>
 			<p class="mt-1 text-sm text-slate-600">
 				Beberapa SKU kekurangan stok. Cek ini bersifat sementara — jaminan hanya saat approval.
@@ -53,10 +53,10 @@
 				<p class="mt-3 text-xs text-slate-500">{catatan}</p>
 			{/if}
 
-			<div class="mt-4 flex flex-wrap justify-end gap-2">
+			<div class="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
 				<button
 					type="button"
-					class="rounded border border-slate-300 px-3 py-1.5 text-sm"
+					class="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm sm:min-h-0 sm:py-1.5"
 					onclick={() => {
 						open = false;
 						onkurangi?.();
@@ -66,7 +66,7 @@
 				</button>
 				<button
 					type="button"
-					class="rounded bg-slate-900 px-3 py-1.5 text-sm text-white"
+					class="min-h-11 rounded-lg bg-slate-900 px-3 py-2 text-sm text-white sm:min-h-0 sm:py-1.5"
 					onclick={() => {
 						open = false;
 						onlanjut?.();

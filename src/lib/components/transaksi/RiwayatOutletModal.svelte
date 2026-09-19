@@ -51,12 +51,12 @@
 
 {#if open}
 	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+		class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="riwayat-outlet-title"
 	>
-		<div class="w-full max-w-lg rounded-lg bg-white p-4 shadow-lg">
+		<div class="w-full max-h-[90dvh] overflow-auto rounded-t-2xl bg-white p-4 shadow-lg sm:max-w-lg sm:rounded-lg">
 			<div class="flex items-start justify-between gap-2">
 				<div>
 					<h2 id="riwayat-outlet-title" class="text-base font-semibold text-slate-900">

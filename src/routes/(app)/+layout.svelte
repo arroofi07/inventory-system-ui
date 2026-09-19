@@ -15,9 +15,11 @@
 		if (path.includes('/piutang/pelanggan/')) return 'Piutang pelanggan';
 		if (path.includes('/piutang')) return 'Piutang';
 		if (path.includes('/pembayaran')) return 'Piutang';
+		if (path.includes('/transaksi/baru')) return 'Transaksi baru';
+		if (/\/transaksi\/\d+/.test(path)) return 'Detail transaksi';
+		if (path.includes('/transaksi')) return 'Transaksi';
 		const labels: Record<string, string> = {
 			'/dashboard': 'Dashboard',
-			'/transaksi': 'Transaksi',
 			'/approval': 'Persetujuan',
 			'/barang': 'Data Barang',
 			'/barang-masuk': 'Barang Masuk',
@@ -32,6 +34,8 @@
 		return labels[path] ?? 'PKB Web';
 	});
 
+	let navOpen = $state(false);
+
 	$effect(() => {
 		if (!auth.siap) return;
 		if (!auth.terautentikasi) {
@@ -45,11 +49,13 @@
 	<p class="p-6 text-sm text-[var(--color-muted)]">Memuat sesi…</p>
 {:else if auth.terautentikasi}
 	<AppShell>
-		<div class="flex min-h-screen">
-			<Sidebar />
-			<div class="flex min-w-0 flex-1 flex-col">
-				<Topbar title={judulHalaman} />
-				<main class="flex-1 p-4 md:p-6">{@render children()}</main>
+		<div class="flex min-h-dvh">
+			<Sidebar bind:open={navOpen} />
+			<div class="flex min-w-0 flex-1 flex-col overflow-x-clip">
+				<Topbar title={judulHalaman} bind:open={navOpen} />
+				<main
+					class="flex-1 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:p-6"
+				>{@render children()}</main>
 			</div>
 		</div>
 		<Toast />

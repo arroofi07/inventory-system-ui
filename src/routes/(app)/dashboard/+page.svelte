@@ -130,12 +130,12 @@
 				{:else}
 					<ul class="mt-2 divide-y divide-slate-100 text-sm">
 						{#each data.aktivitas_terkini.transaksi_pending as a (a.id)}
-							<li class="py-2">
-								<a class="text-brand-700 underline" href={resolveAppPath(`/approval/${a.id}`)}
+							<li class="flex items-start justify-between gap-3 py-2">
+								<a class="min-w-0 flex-1 break-words text-brand-700 underline" href={resolveAppPath(`/approval/${a.id}`)}
 									>{a.judul}</a
 								>
 								{#if a.nominal}
-									<span class="float-right tabular-nums">{formatRupiah(a.nominal)}</span>
+									<span class="shrink-0 tabular-nums">{formatRupiah(a.nominal)}</span>
 								{/if}
 							</li>
 						{/each}

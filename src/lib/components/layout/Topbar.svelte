@@ -4,7 +4,11 @@
 	import { auth } from '$lib/stores/auth.svelte';
 	import NotificationBell from './NotificationBell.svelte';
 
-	let { title = '', children }: { title?: string; children?: Snippet } = $props();
+	let {
+		title = '',
+		open = $bindable(false),
+		children
+	}: { title?: string; open?: boolean; children?: Snippet } = $props();
 
 	let menuOpen = $state(false);
 
@@ -15,12 +19,36 @@
 	}
 </script>
 
-<header class="tanpa-cetak flex h-14 items-center justify-between gap-3 border-b border-brand-100 bg-white px-4">
-	<h1 class="truncate text-base font-semibold text-[var(--color-ink)]">{title}</h1>
+<header
+	class="tanpa-cetak sticky top-0 z-50 flex h-14 items-center justify-between gap-2 border-b border-brand-100 bg-white px-3 sm:gap-3 sm:px-4"
+>
+	<div class="flex min-w-0 flex-1 items-center gap-2">
+		<button
+			type="button"
+			class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-ink hover:bg-slate-50 lg:hidden"
+			onclick={() => (open = !open)}
+			aria-expanded={open}
+			aria-controls="app-sidebar"
+			aria-label={open ? 'Tutup menu' : 'Buka menu'}
+		>
+			{#if open}
+				<span class="text-lg leading-none" aria-hidden="true">×</span>
+			{:else}
+				<span class="flex flex-col gap-1" aria-hidden="true">
+					<span class="block h-0.5 w-4 rounded bg-current"></span>
+					<span class="block h-0.5 w-4 rounded bg-current"></span>
+					<span class="block h-0.5 w-4 rounded bg-current"></span>
+				</span>
+			{/if}
+		</button>
+		<h1 class="truncate text-base font-semibold text-[var(--color-ink)]">{title}</h1>
+	</div>
 
-	<div class="flex items-center gap-3">
+	<div class="flex shrink-0 items-center gap-1 sm:gap-3">
 		{#if children}
-			{@render children()}
+			<div class="hidden sm:block">
+				{@render children()}
+			</div>
 		{/if}
 
 		<NotificationBell />
@@ -29,7 +57,7 @@
 			<div class="relative">
 				<button
 					type="button"
-					class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-slate-50"
+					class="flex items-center gap-2 rounded-md px-1.5 py-1.5 text-sm hover:bg-slate-50 sm:px-2"
 					onclick={() => (menuOpen = !menuOpen)}
 					aria-expanded={menuOpen}
 					aria-haspopup="menu"
@@ -50,7 +78,7 @@
 						<p class="truncate px-3 py-1.5 text-xs text-slate-500">{auth.user.email}</p>
 						<button
 							type="button"
-							class="block w-full px-3 py-2 text-left text-sm text-bahaya hover:bg-red-50"
+							class="block w-full px-3 py-2.5 text-left text-sm text-bahaya hover:bg-red-50"
 							role="menuitem"
 							onclick={logout}
 						>

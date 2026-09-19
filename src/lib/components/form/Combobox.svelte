@@ -75,7 +75,7 @@
 
 <svelte:window onclick={onDocClick} />
 
-<div class="relative w-full min-w-[12rem]" bind:this={rootEl}>
+<div class="relative w-full min-w-0" bind:this={rootEl}>
 	<input
 		{id}
 		{disabled}
@@ -84,7 +84,7 @@
 		aria-expanded={open}
 		aria-autocomplete="list"
 		aria-controls={id ? `${id}-list` : undefined}
-		class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-slate-50"
+		class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-slate-50 md:py-2 md:text-sm"
 		placeholder={selectedLabel || placeholder}
 		value={open ? query : selectedLabel}
 		onfocus={() => {
@@ -102,7 +102,7 @@
 		<ul
 			id={id ? `${id}-list` : undefined}
 			role="listbox"
-			class="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-md"
+			class="absolute z-50 mt-1 max-h-[min(16rem,50vh)] w-full overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-md"
 		>
 			{#if filtered.length === 0}
 				<li class="px-3 py-2 text-sm text-muted">Tidak ada pilihan</li>
@@ -111,7 +111,7 @@
 					<li role="option" aria-selected={opt.value === value}>
 						<button
 							type="button"
-							class="flex w-full px-3 py-2 text-left text-sm hover:bg-brand-50 {i === highlight
+							class="flex min-h-11 w-full px-3 py-2.5 text-left text-sm hover:bg-brand-50 {i === highlight
 								? 'bg-brand-50'
 								: ''}"
 							onmouseenter={() => (highlight = i)}

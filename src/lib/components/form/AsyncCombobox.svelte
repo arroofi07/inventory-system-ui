@@ -98,7 +98,7 @@
 	<input
 		{id}
 		{disabled}
-		class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-slate-50"
+		class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-base focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-slate-50 md:py-2 md:text-sm"
 		placeholder={placeholder}
 		value={open ? query : displayLabel || value}
 		onfocus={buka}
@@ -117,7 +117,7 @@
 	{#if open}
 		<ul
 			id={listId}
-			class="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+			class="absolute z-50 mt-1 max-h-[min(16rem,50vh)] w-full overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
 			role="listbox"
 		>
 			{#if loading}
@@ -129,7 +129,7 @@
 					<li role="option" aria-selected={i === highlight}>
 						<button
 							type="button"
-							class="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-surface {i ===
+							class="flex min-h-11 w-full flex-col px-3 py-2.5 text-left text-sm hover:bg-surface {i ===
 							highlight
 								? 'bg-surface'
 								: ''}"
