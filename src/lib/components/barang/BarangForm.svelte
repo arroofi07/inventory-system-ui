@@ -8,7 +8,7 @@
 		satuan: string;
 		min_stock: number;
 		reorder_point: number;
-		metode_alokasi: 'FEFO' | 'FIFO';
+		metode_alokasi: 'FEFO';
 		expiry_alert_days: number;
 	};
 
@@ -20,7 +20,6 @@
 		satuan?: string;
 		minStock?: number;
 		reorderPoint?: number;
-		metodeAlokasi?: string;
 		expiryAlertDays?: number;
 		disabled?: boolean;
 		errors?: Record<string, string>;
@@ -37,7 +36,6 @@
 		satuan = $bindable('PCS'),
 		minStock = $bindable(0),
 		reorderPoint = $bindable(0),
-		metodeAlokasi = $bindable('FEFO'),
 		expiryAlertDays = $bindable(30),
 		disabled = false,
 		errors = {},
@@ -47,6 +45,28 @@
 
 	const uid = $props.id();
 	let menyimpan = $state(false);
+
+	const SATUAN_OPSI = [
+		{ value: 'PCS', label: 'PCS (buah)' },
+		{ value: 'BOX', label: 'BOX (dus)' },
+		{ value: 'PACK', label: 'PACK (pack)' },
+		{ value: 'CTN', label: 'CTN (karton)' },
+		{ value: 'STRIP', label: 'STRIP (strip)' },
+		{ value: 'SACHET', label: 'SACHET (sachet)' },
+		{ value: 'BOTOL', label: 'BOTOL (botol)' },
+		{ value: 'TUBE', label: 'TUBE (tube)' },
+		{ value: 'SET', label: 'SET (set)' },
+		{ value: 'KG', label: 'KG (kilogram)' },
+		{ value: 'LUSIN', label: 'LUSIN (lusin)' }
+	] as const;
+
+	const opsiSatuan = $derived.by(() => {
+		const current = satuan.trim();
+		if (current && !SATUAN_OPSI.some((o) => o.value === current)) {
+			return [{ value: current, label: current }, ...SATUAN_OPSI];
+		}
+		return [...SATUAN_OPSI];
+	});
 
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
@@ -60,7 +80,7 @@
 				satuan: satuan.trim() || 'PCS',
 				min_stock: Number(minStock) || 0,
 				reorder_point: Number(reorderPoint) || 0,
-				metode_alokasi: metodeAlokasi === 'FIFO' ? 'FIFO' : 'FEFO',
+				metode_alokasi: 'FEFO',
 				expiry_alert_days: Number(expiryAlertDays) || 30
 			});
 		} finally {
@@ -100,56 +120,30 @@
 			maxlength={100}
 		/>
 	</Field>
-	<div class="grid grid-cols-2 gap-3">
+	<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 		<Field label="Satuan" forId={`${uid}-satuan`}>
-			<input
+			<select
 				id={`${uid}-satuan`}
 				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				bind:value={satuan}
 				disabled={disabled || menyimpan}
-			/>
-		</Field>
-		<Field label="Metode alokasi" forId={`${uid}-alokasi`}>
-			<select
-				id={`${uid}-alokasi`}
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-				bind:value={metodeAlokasi}
-				disabled={disabled || menyimpan}
 			>
-				<option value="FEFO">FEFO</option>
-				<option value="FIFO">FIFO</option>
+				{#each opsiSatuan as opsi (opsi.value)}
+					<option value={opsi.value}>{opsi.label}</option>
+				{/each}
 			</select>
 		</Field>
-	</div>
-	<div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-		<Field label="Min stok" forId={`${uid}-min`}>
+		<Field
+			label="Metode alokasi"
+			forId={`${uid}-alokasi`}
+			hint="Dikunci FEFO: batch yang kedaluwarsa lebih dulu dikeluarkan lebih dulu."
+		>
 			<input
-				id={`${uid}-min`}
-				type="number"
-				min="0"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-				bind:value={minStock}
-				disabled={disabled || menyimpan}
-			/>
-		</Field>
-		<Field label="Reorder" forId={`${uid}-reorder`}>
-			<input
-				id={`${uid}-reorder`}
-				type="number"
-				min="0"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-				bind:value={reorderPoint}
-				disabled={disabled || menyimpan}
-			/>
-		</Field>
-		<Field label="Alert exp (hari)" forId={`${uid}-alert-exp`}>
-			<input
-				id={`${uid}-alert-exp`}
-				type="number"
-				min="0"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-				bind:value={expiryAlertDays}
-				disabled={disabled || menyimpan}
+				id={`${uid}-alokasi`}
+				class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
+				value="FEFO"
+				readonly
+				tabindex="-1"
 			/>
 		</Field>
 	</div>

@@ -6,6 +6,7 @@
 		id?: string;
 		min?: number;
 		max?: number;
+		class?: string;
 	}
 
 	let {
@@ -13,7 +14,8 @@
 		disabled = false,
 		id,
 		min = 0,
-		max = 100
+		max = 100,
+		class: className = 'w-28'
 	}: Props = $props();
 
 	function normalize(raw: string): string {
@@ -33,7 +35,7 @@
 	}
 </script>
 
-<div class="relative inline-flex w-28">
+<div class={['relative inline-flex', className]}>
 	<input
 		{id}
 		{disabled}

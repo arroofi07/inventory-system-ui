@@ -2,14 +2,15 @@
 	import { page } from '$app/state';
 	import Field from '$lib/components/form/Field.svelte';
 	import AsyncCombobox from '$lib/components/form/AsyncCombobox.svelte';
-	import CurrencyInput from '$lib/components/form/CurrencyInput.svelte';
 	import BarangForm from '$lib/components/barang/BarangForm.svelte';
+	import HargaPenerimaan from '$lib/components/barang-masuk/HargaPenerimaan.svelte';
 	import { daftarBarang } from '$lib/api/barang';
 	import { buatBarangMasuk } from '$lib/api/barang-masuk';
 	import { ApiError } from '$lib/api/http';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { pergiKe, resolveAppPath } from '$lib/nav';
+	import { hitungAgingMonth } from '$lib/domain/pricing';
 	import { onMount } from 'svelte';
 
 	const awalKode = page.url.searchParams.get('kode_barang') ?? '';
@@ -20,10 +21,6 @@
 	let namaItem = $state('');
 	let brand = $state('');
 	let satuan = $state('PCS');
-	let minStock = $state(0);
-	let reorderPoint = $state(0);
-	let metodeAlokasi = $state('FEFO');
-	let expiryAlertDays = $state(30);
 	let noFaktur = $state('');
 	let noBatch = $state('');
 	let exp = $state('');
@@ -37,9 +34,10 @@
 	let markupMtAmt = $state('0.00');
 	let markupGtType = $state<'percent' | 'value'>('percent');
 	let markupGtAmt = $state('0.00');
-	let aging = $state(0);
 	let errors = $state<Record<string, string>>({});
 	let menyimpan = $state(false);
+
+	const agingBulan = $derived(hitungAgingMonth(tanggalMasuk, exp));
 
 	onMount(() => {
 		if (!auth.punyaIzin('barang_masuk.buat')) {
@@ -81,10 +79,6 @@
 				nama_item: modeBaru ? namaItem.trim() : undefined,
 				brand: modeBaru ? brand.trim() : undefined,
 				satuan: modeBaru ? satuan.trim() || 'PCS' : undefined,
-				min_stock: modeBaru ? Number(minStock) || 0 : undefined,
-				reorder_point: modeBaru ? Number(reorderPoint) || 0 : undefined,
-				metode_alokasi: modeBaru ? (metodeAlokasi === 'FIFO' ? 'FIFO' : 'FEFO') : undefined,
-				expiry_alert_days: modeBaru ? Number(expiryAlertDays) || 30 : undefined,
 				no_faktur: noFaktur.trim(),
 				no_batch: noBatch.trim(),
 				exp,
@@ -97,8 +91,7 @@
 				markup_mt_type: markupMtType,
 				markup_mt_amount: markupMtAmt,
 				markup_gt_type: markupGtType,
-				markup_gt_amount: markupGtAmt,
-				aging_month: Number(aging) || 0
+				markup_gt_amount: markupGtAmt
 			});
 			showToast(
 				`Penerimaan ${res.data.kode_barang} tersimpan · HPP ${res.data.hpp} · MT ${res.data.harga_mt}`,
@@ -132,7 +125,7 @@
 	</header>
 
 	<form
-		class="grid max-w-2xl gap-4"
+		class="grid max-w-3xl gap-4"
 		onsubmit={(e) => {
 			e.preventDefault();
 			void simpan();
@@ -151,10 +144,6 @@
 				bind:namaItem
 				bind:brand
 				bind:satuan
-				bind:minStock
-				bind:reorderPoint
-				bind:metodeAlokasi
-				bind:expiryAlertDays
 				{errors}
 				disabled={menyimpan}
 			/>
@@ -194,7 +183,7 @@
 			</Field>
 		</div>
 
-		<div class="grid gap-3 sm:grid-cols-3">
+		<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 			<Field label="Tanggal masuk" required forId="tgl">
 				<input
 					id="tgl"
@@ -223,74 +212,30 @@
 					required
 				/>
 			</Field>
-		</div>
-
-		<Field label="Harga list" required forId="harga" error={errors.harga}>
-			<CurrencyInput id="harga" bind:value={harga} />
-		</Field>
-
-		<div class="grid gap-3 sm:grid-cols-3">
-			<Field label="Disc HPP 1 (%)" forId="d1">
+			<Field label="Aging (bulan)" forId="aging" hint="Otomatis dari tanggal masuk ke exp">
 				<input
-					id="d1"
-					class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
-					bind:value={disc1}
-				/>
-			</Field>
-			<Field label="Disc HPP 2 (%)" forId="d2">
-				<input
-					id="d2"
-					class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
-					bind:value={disc2}
-				/>
-			</Field>
-			<Field label="Disc HPP 3 (%)" forId="d3">
-				<input
-					id="d3"
-					class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
-					bind:value={disc3}
+					id="aging"
+					type="text"
+					readonly
+					class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm tabular-nums"
+					value={exp ? String(agingBulan) : '—'}
+					tabindex="-1"
 				/>
 			</Field>
 		</div>
 
-		<div class="grid gap-3 sm:grid-cols-2">
-			<div class="grid gap-2">
-				<Field label="Markup MT" forId="mt-type">
-					<select
-						id="mt-type"
-						class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-						bind:value={markupMtType}
-					>
-						<option value="percent">Persen</option>
-						<option value="value">Nilai</option>
-					</select>
-				</Field>
-				<CurrencyInput id="mt-amt" bind:value={markupMtAmt} />
-			</div>
-			<div class="grid gap-2">
-				<Field label="Markup GT" forId="gt-type">
-					<select
-						id="gt-type"
-						class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-						bind:value={markupGtType}
-					>
-						<option value="percent">Persen</option>
-						<option value="value">Nilai</option>
-					</select>
-				</Field>
-				<CurrencyInput id="gt-amt" bind:value={markupGtAmt} />
-			</div>
-		</div>
-
-		<Field label="Aging (bulan)" forId="aging">
-			<input
-				id="aging"
-				type="number"
-				min="0"
-				class="w-full max-w-[8rem] rounded-lg border border-slate-300 px-3 py-2 text-sm"
-				bind:value={aging}
-			/>
-		</Field>
+		<HargaPenerimaan
+			bind:harga
+			bind:disc1
+			bind:disc2
+			bind:disc3
+			bind:markupMtType
+			bind:markupMtAmt
+			bind:markupGtType
+			bind:markupGtAmt
+			{errors}
+			disabled={menyimpan}
+		/>
 
 		<button
 			type="submit"

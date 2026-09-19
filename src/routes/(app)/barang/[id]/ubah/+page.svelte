@@ -15,7 +15,6 @@
 	let satuan = $state('PCS');
 	let minStock = $state(0);
 	let reorderPoint = $state(0);
-	let metodeAlokasi = $state('FEFO');
 	let expiryAlertDays = $state(30);
 
 	const id = $derived(Number(page.params.id));
@@ -38,7 +37,6 @@
 				satuan = b.satuan;
 				minStock = b.min_stock;
 				reorderPoint = b.reorder_point;
-				metodeAlokasi = b.metode_alokasi;
 				expiryAlertDays = b.expiry_alert_days;
 			})
 			.catch((e) => {
@@ -71,7 +69,6 @@
 			bind:satuan
 			bind:minStock
 			bind:reorderPoint
-			bind:metodeAlokasi
 			bind:expiryAlertDays
 			{errors}
 			onsubmit={async (payload) => {
