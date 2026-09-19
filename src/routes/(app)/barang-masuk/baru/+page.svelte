@@ -3,6 +3,7 @@
 	import Field from '$lib/components/form/Field.svelte';
 	import AsyncCombobox from '$lib/components/form/AsyncCombobox.svelte';
 	import CurrencyInput from '$lib/components/form/CurrencyInput.svelte';
+	import BarangForm from '$lib/components/barang/BarangForm.svelte';
 	import { daftarBarang } from '$lib/api/barang';
 	import { buatBarangMasuk } from '$lib/api/barang-masuk';
 	import { ApiError } from '$lib/api/http';
@@ -11,13 +12,18 @@
 	import { pergiKe, resolveAppPath } from '$lib/nav';
 	import { onMount } from 'svelte';
 
-	const prefillKode = $derived(page.url.searchParams.get('kode_barang') ?? '');
+	const awalKode = page.url.searchParams.get('kode_barang') ?? '';
+	const awalBuatBaru = page.url.searchParams.get('buat_baru') === '1' && !awalKode;
 
-	let modeBaru = $state(false);
-	let kodeBarang = $state('');
+	let modeBaru = $state(awalBuatBaru);
+	let kodeBarang = $state(awalKode);
 	let namaItem = $state('');
 	let brand = $state('');
 	let satuan = $state('PCS');
+	let minStock = $state(0);
+	let reorderPoint = $state(0);
+	let metodeAlokasi = $state('FEFO');
+	let expiryAlertDays = $state(30);
 	let noFaktur = $state('');
 	let noBatch = $state('');
 	let exp = $state('');
@@ -41,11 +47,14 @@
 			void pergiKe('/barang-masuk');
 			return;
 		}
-		if (prefillKode) {
-			kodeBarang = prefillKode;
-			modeBaru = false;
-		}
 	});
+
+	const judulHalaman = $derived(modeBaru ? 'Tambah barang' : 'Tambah stok');
+	const subjudul = $derived(
+		modeBaru
+			? 'Master SKU sekaligus penerimaan pertama. Harga jual (MT/GT) dan HPP dihitung server.'
+			: 'Harga jual (MT/GT) dan HPP dihitung server — tidak diisi manual.'
+	);
 
 	async function cariBarang(q: string) {
 		const res = await daftarBarang({
@@ -72,6 +81,10 @@
 				nama_item: modeBaru ? namaItem.trim() : undefined,
 				brand: modeBaru ? brand.trim() : undefined,
 				satuan: modeBaru ? satuan.trim() || 'PCS' : undefined,
+				min_stock: modeBaru ? Number(minStock) || 0 : undefined,
+				reorder_point: modeBaru ? Number(reorderPoint) || 0 : undefined,
+				metode_alokasi: modeBaru ? (metodeAlokasi === 'FIFO' ? 'FIFO' : 'FEFO') : undefined,
+				expiry_alert_days: modeBaru ? Number(expiryAlertDays) || 30 : undefined,
 				no_faktur: noFaktur.trim(),
 				no_batch: noBatch.trim(),
 				exp,
@@ -114,10 +127,8 @@
 		>← Daftar barang masuk</a
 	>
 	<header>
-		<h1 class="font-display text-2xl text-ink">Tambah stok</h1>
-		<p class="text-sm text-muted">
-			Harga jual (MT/GT) dan HPP dihitung server — tidak diisi manual.
-		</p>
+		<h1 class="font-display text-2xl text-ink">{judulHalaman}</h1>
+		<p class="text-sm text-muted">{subjudul}</p>
 	</header>
 
 	<form
@@ -128,44 +139,25 @@
 		}}
 	>
 		<label class="flex items-center gap-2 text-sm text-ink">
-			<input type="checkbox" bind:checked={modeBaru} />
+			<input type="checkbox" bind:checked={modeBaru} disabled={!!awalKode} />
 			Buat master barang baru sekaligus
 		</label>
 
 		{#if modeBaru}
-			<Field label="Kode barang" required forId="kode" error={errors.kode_barang}>
-				<input
-					id="kode"
-					class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
-					bind:value={kodeBarang}
-					required
-				/>
-			</Field>
-			<div class="grid gap-3 sm:grid-cols-2">
-				<Field label="Nama item" required forId="nama" error={errors.nama_item}>
-					<input
-						id="nama"
-						class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-						bind:value={namaItem}
-						required
-					/>
-				</Field>
-				<Field label="Brand" required forId="brand" error={errors.brand}>
-					<input
-						id="brand"
-						class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-						bind:value={brand}
-						required
-					/>
-				</Field>
-			</div>
-			<Field label="Satuan" forId="satuan">
-				<input
-					id="satuan"
-					class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-					bind:value={satuan}
-				/>
-			</Field>
+			<BarangForm
+				hideSubmit
+				mode="buat"
+				bind:kodeBarang
+				bind:namaItem
+				bind:brand
+				bind:satuan
+				bind:minStock
+				bind:reorderPoint
+				bind:metodeAlokasi
+				bind:expiryAlertDays
+				{errors}
+				disabled={menyimpan}
+			/>
 		{:else}
 			<Field label="Barang" required forId="cari-barang" error={errors.kode_barang}>
 				<AsyncCombobox
@@ -305,7 +297,7 @@
 			class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800 disabled:opacity-50"
 			disabled={menyimpan}
 		>
-			{menyimpan ? 'Menyimpan…' : 'Simpan penerimaan'}
+			{menyimpan ? 'Menyimpan…' : modeBaru ? 'Simpan barang' : 'Simpan penerimaan'}
 		</button>
 	</form>
 </div>

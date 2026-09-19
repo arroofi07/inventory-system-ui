@@ -46,6 +46,10 @@ export type BarangMasukCreateBody = {
 	nama_item?: string;
 	brand?: string;
 	satuan?: string;
+	min_stock?: number;
+	reorder_point?: number;
+	metode_alokasi?: 'FEFO' | 'FIFO';
+	expiry_alert_days?: number;
 	no_faktur: string;
 	no_batch: string;
 	exp: string;

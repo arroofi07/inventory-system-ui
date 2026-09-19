@@ -9,6 +9,7 @@
 	import Combobox from '$lib/components/form/Combobox.svelte';
 	import {
 		daftarBarang,
+		pathTambahBarang,
 		pathTambahStok,
 		type Barang,
 		type PageMeta,
@@ -119,14 +120,28 @@
 				>).
 			</p>
 		</div>
-		{#if bisaKelola}
-			<a
-				href={resolveAppPath('/barang/baru')}
-				class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800"
-			>
-				Tambah barang
-			</a>
-		{/if}
+		<div class="flex flex-wrap items-center gap-2">
+			{#if bisaTambahStok}
+				<a
+					href={resolveAppPath(pathTambahBarang())}
+					class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800"
+				>
+					Tambah barang
+				</a>
+			{:else if bisaKelola}
+				<a
+					href={resolveAppPath('/barang/baru')}
+					class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800"
+				>
+					Tambah barang
+				</a>
+			{/if}
+			<!-- {#if bisaKelola && bisaTambahStok}
+				<a href={resolveAppPath('/barang/baru')} class="text-sm text-brand-700 underline">
+					SKU tanpa stok
+				</a>
+			{/if} -->
+		</div>
 	</header>
 
 	<div class="grid gap-3 sm:grid-cols-3">

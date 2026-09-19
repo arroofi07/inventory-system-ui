@@ -110,6 +110,11 @@ export function pathTambahStok(kodeBarang: string): string {
 	return `/barang-masuk/baru?kode_barang=${encodeURIComponent(kodeBarang)}`;
 }
 
+/** Form penerimaan dengan master SKU baru. */
+export function pathTambahBarang(): string {
+	return '/barang-masuk/baru?buat_baru=1';
+}
+
 export type BatchTersediaItem = {
 	barang_masuk_id: number;
 	no_batch: string;
