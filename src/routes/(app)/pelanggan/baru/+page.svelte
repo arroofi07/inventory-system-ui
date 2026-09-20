@@ -23,7 +23,9 @@
 	>
 	<header>
 		<h1 class="font-display text-2xl text-ink">Tambah pelanggan</h1>
-		<p class="text-sm text-muted">Kode pelanggan harus unik.</p>
+		<p class="text-sm text-muted">
+			Kode terisi otomatis saat mengetik nama (3 huruf awal tiap kata + 4 angka). Bisa diubah manual.
+		</p>
 	</header>
 
 	<PelangganForm

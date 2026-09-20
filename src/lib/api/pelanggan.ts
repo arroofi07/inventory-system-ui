@@ -56,7 +56,7 @@ export type PelangganListParams = {
 };
 
 export type PelangganCreateBody = {
-	kode_pelanggan: string;
+	kode_pelanggan?: string;
 	nama_pelanggan: string;
 	tgl_registrasi: string;
 	phone: string;

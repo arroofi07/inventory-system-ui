@@ -7,6 +7,10 @@
 		type ChannelOutlet,
 		type PelangganCreateBody
 	} from '$lib/api/pelanggan';
+	import {
+		prefixKodePelangganDariNama,
+		suffixKodePelangganAcak
+	} from '$lib/domain/pelanggan';
 
 	interface Props {
 		mode: 'buat' | 'ubah';
@@ -69,16 +73,44 @@
 	}: Props = $props();
 
 	let menyimpan = $state(false);
+	/** null = ikuti nama; string = override manual */
+	let kodeManual: string | null = $state(null);
+	let suffixAngka = $state('');
+	let prefixTerakhir = $state('');
 
 	const channelOpts = CHANNEL_OUTLET_OPTIONS.map((o) => ({ value: o.value, label: o.label }));
+
+	const prefixOtomatis = $derived(prefixKodePelangganDariNama(namaPelanggan));
+
+	$effect(() => {
+		if (mode !== 'buat' || kodeManual !== null) return;
+		const prefix = prefixOtomatis;
+		if (!prefix) {
+			suffixAngka = '';
+			prefixTerakhir = '';
+			return;
+		}
+		if (prefix !== prefixTerakhir) {
+			suffixAngka = suffixKodePelangganAcak();
+			prefixTerakhir = prefix;
+		}
+	});
+
+	const kodeOtomatisDariNama = $derived(
+		prefixOtomatis && suffixAngka ? `${prefixOtomatis}${suffixAngka}` : ''
+	);
+	const kodeBuat = $derived(kodeManual ?? kodeOtomatisDariNama);
+
+	function handleKodeBuatInput(e: Event) {
+		kodeManual = (e.currentTarget as HTMLInputElement).value;
+	}
 
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
 		if (menyimpan || disabled) return;
 		menyimpan = true;
 		try {
-			await onsubmit({
-				kode_pelanggan: kodePelanggan.trim(),
+			const payload: PelangganCreateBody = {
 				nama_pelanggan: namaPelanggan.trim(),
 				tgl_registrasi: tglRegistrasi.trim(),
 				phone: phone.trim(),
@@ -100,7 +132,14 @@
 				status_bangunan: statusBangunan.trim() || null,
 				nominal_pengambilan_pertama: nominalPengambilanPertama || '0',
 				estimasi_batas_kredit: estimasiBatasKredit || '0'
-			});
+			};
+			if (mode === 'buat') {
+				const kode = kodeBuat.trim();
+				if (kode) payload.kode_pelanggan = kode;
+			} else {
+				payload.kode_pelanggan = kodePelanggan.trim();
+			}
+			await onsubmit(payload);
 		} finally {
 			menyimpan = false;
 		}
@@ -110,29 +149,57 @@
 <form class="grid max-w-3xl gap-6" onsubmit={handleSubmit}>
 	<section class="grid gap-4 sm:grid-cols-2">
 		<h2 class="sm:col-span-2 font-display text-lg text-ink">Identitas</h2>
-		<Field label="Kode pelanggan" required forId="kode" error={errors.kode_pelanggan}>
-			<input
-				id="kode"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm disabled:bg-slate-50"
-				bind:value={kodePelanggan}
-				disabled={kodeTerkunci || disabled || menyimpan}
-				required
-				maxlength={32}
-			/>
-			{#if kodeTerkunci}
-				<p class="mt-1 text-xs text-muted">Kode terkunci karena sudah punya transaksi.</p>
-			{/if}
-		</Field>
-		<Field label="Nama pelanggan" required forId="nama" error={errors.nama_pelanggan}>
-			<input
-				id="nama"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-				bind:value={namaPelanggan}
-				disabled={disabled || menyimpan}
-				required
-				maxlength={255}
-			/>
-		</Field>
+		{#if mode === 'buat'}
+			<Field label="Nama pelanggan" required forId="nama" error={errors.nama_pelanggan}>
+				<input
+					id="nama"
+					class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+					bind:value={namaPelanggan}
+					disabled={disabled || menyimpan}
+					required
+					maxlength={255}
+				/>
+			</Field>
+			<Field
+				label="Kode pelanggan"
+				forId="kode"
+				error={errors.kode_pelanggan}
+				hint="3 huruf awal tiap kata + 4 angka (contoh: Toko Budiman → TOKBUD5187). Bisa diubah manual."
+			>
+				<input
+					id="kode"
+					class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
+					value={kodeBuat}
+					oninput={handleKodeBuatInput}
+					disabled={disabled || menyimpan}
+					maxlength={32}
+				/>
+			</Field>
+		{:else}
+			<Field label="Kode pelanggan" required forId="kode" error={errors.kode_pelanggan}>
+				<input
+					id="kode"
+					class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm disabled:bg-slate-50"
+					bind:value={kodePelanggan}
+					disabled={kodeTerkunci || disabled || menyimpan}
+					required
+					maxlength={32}
+				/>
+				{#if kodeTerkunci}
+					<p class="mt-1 text-xs text-muted">Kode terkunci karena sudah punya transaksi.</p>
+				{/if}
+			</Field>
+			<Field label="Nama pelanggan" required forId="nama" error={errors.nama_pelanggan}>
+				<input
+					id="nama"
+					class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+					bind:value={namaPelanggan}
+					disabled={disabled || menyimpan}
+					required
+					maxlength={255}
+				/>
+			</Field>
+		{/if}
 		<Field label="Tanggal registrasi" required forId="tgl" error={errors.tgl_registrasi}>
 			<input
 				id="tgl"
