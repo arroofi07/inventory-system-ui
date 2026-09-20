@@ -95,6 +95,30 @@ export async function buatBarangMasuk(body: BarangMasukCreateBody) {
 	});
 }
 
+export type BarangMasukUpdateBody = {
+	no_faktur?: string;
+	no_batch?: string;
+	exp?: string;
+	tanggal_masuk?: string;
+	qty?: number;
+	harga?: string;
+	disc_hpp_1?: string;
+	disc_hpp_2?: string;
+	disc_hpp_3?: string;
+	markup_mt_type?: 'percent' | 'value';
+	markup_mt_amount?: string;
+	markup_gt_type?: 'percent' | 'value';
+	markup_gt_amount?: string;
+	aging_month?: number;
+};
+
+export async function ubahBarangMasuk(id: number, body: BarangMasukUpdateBody) {
+	return apiFetch<{ data: BarangMasuk }>(`/barang-masuk/${id}`, {
+		method: 'PATCH',
+		body: JSON.stringify(body)
+	});
+}
+
 export async function hapusBarangMasuk(id: number) {
 	return apiFetch<{ data: { ok: boolean } }>(`/barang-masuk/${id}`, { method: 'DELETE' });
 }

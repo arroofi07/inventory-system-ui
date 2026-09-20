@@ -150,6 +150,13 @@ export type BatchListItem = {
 	qty_masuk: number;
 	qty_tersedia: number;
 	harga: string;
+	disc_hpp_1: string;
+	disc_hpp_2: string;
+	disc_hpp_3: string;
+	markup_mt_type: 'percent' | 'value' | string;
+	markup_mt_amount: string;
+	markup_gt_type: 'percent' | 'value' | string;
+	markup_gt_amount: string;
 	harga_mt: string;
 	harga_gt: string;
 	hpp: string;

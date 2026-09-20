@@ -115,7 +115,7 @@
 		<div>
 			<h1 class="font-display text-2xl text-ink">Master Barang</h1>
 			<p class="text-sm text-muted">
-				Katalog SKU. Stok dari saldo ledger resmi (<code class="font-mono text-xs"
+				  Katalog SKU. Stok dari saldo ledger resmi (<code class="font-mono text-xs"
 					>stok_tersedia</code
 				>).
 			</p>

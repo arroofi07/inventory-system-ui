@@ -18,6 +18,7 @@
 
 	const id = $derived(Number(page.params.id));
 	const bisaHapus = $derived(auth.punyaIzin('barang_masuk.hapus'));
+	const bisaUbah = $derived(auth.punyaIzin('barang_masuk.ubah'));
 
 	$effect(() => {
 		const currentId = id;
@@ -108,15 +109,27 @@
 			</p>
 		</section>
 
-		{#if bisaHapus}
-			<button
-				type="button"
-				class="rounded-lg border border-bahaya px-4 py-2 text-sm text-bahaya hover:bg-red-50 disabled:opacity-50"
-				disabled={menghapus}
-				onclick={() => void hapus()}
-			>
-				{menghapus ? 'Menghapus…' : 'Hapus penerimaan'}
-			</button>
+		{#if bisaUbah || bisaHapus}
+			<div class="flex flex-wrap gap-2">
+				{#if bisaUbah}
+					<a
+						href={resolveAppPath(`/barang-masuk/${item.id}/ubah`)}
+						class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-surface"
+					>
+						Ubah penerimaan
+					</a>
+				{/if}
+				{#if bisaHapus}
+					<button
+						type="button"
+						class="rounded-lg border border-bahaya px-4 py-2 text-sm text-bahaya hover:bg-red-50 disabled:opacity-50"
+						disabled={menghapus}
+						onclick={() => void hapus()}
+					>
+						{menghapus ? 'Menghapus…' : 'Hapus penerimaan'}
+					</button>
+				{/if}
+			</div>
 		{/if}
 	{/if}
 </div>
