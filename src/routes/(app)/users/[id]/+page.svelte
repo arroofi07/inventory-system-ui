@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Badge from '$lib/components/data/Badge.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
 	import { detailUser, hapusUser, setStatusUser, type User } from '$lib/api/users';
 	import { ApiError } from '$lib/api/http';
 	import { auth } from '$lib/stores/auth.svelte';
@@ -64,7 +66,9 @@
 </script>
 
 <div class="space-y-4">
-	<a href={resolveAppPath('/users')} class="text-sm text-brand-700 underline">← Kembali ke daftar</a>
+	<Button variant="link" class="h-auto p-0" href={resolveAppPath('/users')}>
+		← Kembali ke daftar
+	</Button>
 
 	{#if loading}
 		<p class="text-sm text-muted">Memuat…</p>
@@ -89,38 +93,25 @@
 			</div>
 		</header>
 
-		<section class="rounded-[var(--radius-card)] border border-slate-200 bg-white p-4 text-sm">
-			<p><span class="text-muted">HP:</span> {item.no_hp ?? '—'}</p>
-			<p><span class="text-muted">KTP:</span> {item.no_ktp ?? '—'}</p>
-			<p><span class="text-muted">Jenis kelamin:</span> {item.jenis_kelamin ?? '—'}</p>
-			{#if item.alamat}
-				<p class="mt-2"><span class="text-muted">Alamat:</span> {item.alamat}</p>
-			{/if}
-		</section>
+		<Card.Root class="gap-0 border border-primary/20 bg-white p-4 shadow-none ring-0">
+			<Card.Content class="space-y-1 p-0 text-sm">
+				<p><span class="text-muted">HP:</span> {item.no_hp ?? '—'}</p>
+				<p><span class="text-muted">KTP:</span> {item.no_ktp ?? '—'}</p>
+				<p><span class="text-muted">Jenis kelamin:</span> {item.jenis_kelamin ?? '—'}</p>
+				{#if item.alamat}
+					<p class="mt-2"><span class="text-muted">Alamat:</span> {item.alamat}</p>
+				{/if}
+			</Card.Content>
+		</Card.Root>
 
 		{#if bisaKelola}
 			<div class="flex flex-wrap gap-2">
-				<a
-					href={resolveAppPath(`/users/${item.id}/ubah`)}
-					class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white"
-				>
-					Ubah
-				</a>
-				<button
-					type="button"
-					class="rounded-lg border border-slate-300 px-4 py-2 text-sm"
-					onclick={toggleAktif}
-				>
+				<Button href={resolveAppPath(`/users/${item.id}/ubah`)}>Ubah</Button>
+				<Button variant="outline" type="button" onclick={toggleAktif}>
 					{item.is_active ? 'Nonaktifkan' : 'Aktifkan'}
-				</button>
+				</Button>
 				{#if bisaHapus}
-					<button
-						type="button"
-						class="rounded-lg border border-red-300 px-4 py-2 text-sm text-bahaya"
-						onclick={konfirmasiHapus}
-					>
-						Hapus
-					</button>
+					<Button variant="destructive" type="button" onclick={konfirmasiHapus}>Hapus</Button>
 				{/if}
 			</div>
 		{/if}

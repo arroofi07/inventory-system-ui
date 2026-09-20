@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
 	import {
 		detailBarangMasuk,
 		hapusBarangMasuk,
@@ -59,9 +61,9 @@
 </script>
 
 <div class="space-y-4">
-	<a href={resolveAppPath('/barang-masuk')} class="text-sm text-brand-700 underline"
-		>← Daftar barang masuk</a
-	>
+	<Button variant="link" class="h-auto p-0" href={resolveAppPath('/barang-masuk')}>
+		← Daftar barang masuk
+	</Button>
 
 	{#if loading}
 		<p class="text-sm text-muted">Memuat…</p>
@@ -77,26 +79,26 @@
 		</header>
 
 		<section class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-			<div class="rounded-[var(--radius-card)] border border-slate-200 bg-white p-4">
+			<Card.Root class="gap-0 border p-4 shadow-none ring-0">
 				<p class="text-xs uppercase text-muted">Qty / tersedia</p>
 				<p class="font-display text-2xl tabular-nums">{item.qty} / {item.qty_tersedia}</p>
-			</div>
-			<div class="rounded-[var(--radius-card)] border border-slate-200 bg-white p-4">
+			</Card.Root>
+			<Card.Root class="gap-0 border p-4 shadow-none ring-0">
 				<p class="text-xs uppercase text-muted">HPP</p>
 				<p class="text-lg tabular-nums">{formatRupiah(item.hpp)}</p>
 				<p class="text-xs text-muted">+PPN {formatRupiah(item.hpp_dengan_ppn)}</p>
-			</div>
-			<div class="rounded-[var(--radius-card)] border border-slate-200 bg-white p-4">
+			</Card.Root>
+			<Card.Root class="gap-0 border p-4 shadow-none ring-0">
 				<p class="text-xs uppercase text-muted">Harga MT</p>
 				<p class="text-lg tabular-nums">{formatRupiah(item.harga_mt)}</p>
-			</div>
-			<div class="rounded-[var(--radius-card)] border border-slate-200 bg-white p-4">
+			</Card.Root>
+			<Card.Root class="gap-0 border p-4 shadow-none ring-0">
 				<p class="text-xs uppercase text-muted">Harga GT</p>
 				<p class="text-lg tabular-nums">{formatRupiah(item.harga_gt)}</p>
-			</div>
+			</Card.Root>
 		</section>
 
-		<section class="rounded-[var(--radius-card)] border border-slate-200 bg-white p-4 text-sm">
+		<Card.Root class="gap-0 border p-4 text-sm shadow-none ring-0">
 			<p><span class="text-muted">Harga list:</span> {formatRupiah(item.harga)}</p>
 			<p>
 				<span class="text-muted">Disc HPP:</span>
@@ -107,27 +109,19 @@
 				{item.markup_mt_type} {item.markup_mt_amount} · {item.markup_gt_type}
 				{item.markup_gt_amount}
 			</p>
-		</section>
+		</Card.Root>
 
 		{#if bisaUbah || bisaHapus}
 			<div class="flex flex-wrap gap-2">
 				{#if bisaUbah}
-					<a
-						href={resolveAppPath(`/barang-masuk/${item.id}/ubah`)}
-						class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-surface"
-					>
+					<Button variant="outline" href={resolveAppPath(`/barang-masuk/${item.id}/ubah`)}>
 						Ubah penerimaan
-					</a>
+					</Button>
 				{/if}
 				{#if bisaHapus}
-					<button
-						type="button"
-						class="rounded-lg border border-bahaya px-4 py-2 text-sm text-bahaya hover:bg-red-50 disabled:opacity-50"
-						disabled={menghapus}
-						onclick={() => void hapus()}
-					>
+					<Button variant="destructive" disabled={menghapus} onclick={() => void hapus()}>
 						{menghapus ? 'Menghapus…' : 'Hapus penerimaan'}
-					</button>
+					</Button>
 				{/if}
 			</div>
 		{/if}

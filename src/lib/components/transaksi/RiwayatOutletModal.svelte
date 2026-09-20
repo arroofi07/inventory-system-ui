@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Button } from '$lib/components/ui/button/index.js';
 	import {
 		riwayatTransaksiPelanggan,
 		type RiwayatTransaksiItem
@@ -56,41 +57,39 @@
 		aria-modal="true"
 		aria-labelledby="riwayat-outlet-title"
 	>
-		<div class="w-full max-h-[90dvh] overflow-auto rounded-t-2xl bg-white p-4 shadow-lg sm:max-w-lg sm:rounded-lg">
+		<div class="w-full max-h-[90dvh] overflow-auto rounded-t-2xl bg-card p-4 shadow-lg sm:max-w-lg sm:rounded-2xl">
 			<div class="flex items-start justify-between gap-2">
 				<div>
-					<h2 id="riwayat-outlet-title" class="text-base font-semibold text-slate-900">
+					<h2 id="riwayat-outlet-title" class="text-base font-semibold">
 						Riwayat outlet
 					</h2>
-					<p class="text-sm text-slate-600">
+					<p class="text-sm text-muted-foreground">
 						{namaPelanggan || kodePelanggan}
 						{#if namaPelanggan && kodePelanggan}
-							<span class="text-slate-400">({kodePelanggan})</span>
+							<span class="text-muted-foreground/70">({kodePelanggan})</span>
 						{/if}
 					</p>
 				</div>
-				<button
-					type="button"
-					class="rounded border px-2 py-1 text-sm"
-					onclick={() => (open = false)}>Tutup</button
-				>
+				<Button type="button" variant="outline" size="sm" onclick={() => (open = false)}>
+					Tutup
+				</Button>
 			</div>
 
 			{#if loading}
-				<p class="mt-4 text-sm text-slate-500">Memuat…</p>
+				<p class="mt-4 text-sm text-muted-foreground">Memuat…</p>
 			{:else if error}
-				<p class="mt-4 text-sm text-red-600">{error}</p>
+				<p class="mt-4 text-sm text-destructive">{error}</p>
 			{:else if items.length === 0}
-				<p class="mt-4 text-sm text-slate-500">Belum ada transaksi untuk outlet ini.</p>
+				<p class="mt-4 text-sm text-muted-foreground">Belum ada transaksi untuk outlet ini.</p>
 			{:else}
 				<ul class="mt-3 max-h-72 space-y-2 overflow-y-auto text-sm">
 					{#each items as row (row.id)}
-						<li class="rounded border border-slate-200 px-3 py-2">
+						<li class="rounded-2xl border border-border px-3 py-2">
 							<div class="flex justify-between gap-2">
 								<span class="font-medium">{row.tanggal}</span>
 								<span>{formatRupiah(row.total_akhir)}</span>
 							</div>
-							<div class="text-slate-500">
+							<div class="text-muted-foreground">
 								#{row.id}
 								{#if row.no_transaksi}
 									· {row.no_transaksi}

@@ -1,4 +1,7 @@
 <script lang="ts">
+	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
+	import { buttonVariants } from '$lib/components/ui/button/index.js';
+
 	let {
 		open = $bindable(false),
 		message = 'Lanjutkan?',
@@ -8,25 +11,21 @@
 		message?: string;
 		onconfirm?: () => void;
 	} = $props();
+
+	function handleConfirm() {
+		onconfirm?.();
+		open = false;
+	}
 </script>
 
-{#if open}
-	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-		<div class="w-full max-w-sm rounded-lg bg-white p-4 shadow-lg">
-			<p class="text-sm">{message}</p>
-			<div class="mt-4 flex justify-end gap-2">
-				<button type="button" class="rounded border px-3 py-1.5 text-sm" onclick={() => (open = false)}
-					>Batal</button
-				>
-				<button
-					type="button"
-					class="rounded bg-slate-900 px-3 py-1.5 text-sm text-white"
-					onclick={() => {
-						onconfirm?.();
-						open = false;
-					}}>Ya</button
-				>
-			</div>
-		</div>
-	</div>
-{/if}
+<AlertDialog.Root bind:open>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Description>{message}</AlertDialog.Description>
+		</AlertDialog.Header>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel class={buttonVariants({ variant: 'outline' })}>Batal</AlertDialog.Cancel>
+			<AlertDialog.Action class={buttonVariants()} onclick={handleConfirm}>Ya</AlertDialog.Action>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>

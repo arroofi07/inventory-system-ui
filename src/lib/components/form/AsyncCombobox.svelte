@@ -1,5 +1,11 @@
 <script lang="ts">
+	import type { Attachment } from 'svelte/attachments';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { cn } from '$lib/utils.js';
+
 	type Option = { value: string; label: string; hint?: string };
+	type ComboboxKey = 'ArrowDown' | 'ArrowUp' | 'Enter' | 'Escape';
 
 	interface Props {
 		value?: string;
@@ -29,8 +35,15 @@
 	let loading = $state(false);
 	let highlight = $state(0);
 	let displayLabel = $state('');
-	let rootEl: HTMLDivElement | undefined = $state();
 	let debounce: ReturnType<typeof setTimeout> | undefined;
+
+	const tutupSaatKlikLuar: Attachment<HTMLDivElement> = (node) => {
+		function onDocClick(e: MouseEvent) {
+			if (!node.contains(e.target as Node)) open = false;
+		}
+		window.addEventListener('click', onDocClick);
+		return () => window.removeEventListener('click', onDocClick);
+	};
 
 	async function muat(q: string) {
 		loading = true;
@@ -63,7 +76,12 @@
 
 	function onKeydown(e: KeyboardEvent) {
 		if (disabled) return;
-		switch (e.key) {
+		const key = e.key;
+		if (key !== 'ArrowDown' && key !== 'ArrowUp' && key !== 'Enter' && key !== 'Escape') {
+			return;
+		}
+		const action: ComboboxKey = key;
+		switch (action) {
 			case 'ArrowDown':
 				e.preventDefault();
 				open = true;
@@ -82,23 +100,19 @@
 			case 'Escape':
 				open = false;
 				break;
-			default:
-				break;
+			default: {
+				const _exhaustive: never = action;
+				return _exhaustive;
+			}
 		}
-	}
-
-	function onDocClick(e: MouseEvent) {
-		if (rootEl && !rootEl.contains(e.target as Node)) open = false;
 	}
 </script>
 
-<svelte:window onclick={onDocClick} />
-
-<div class="relative w-full" bind:this={rootEl}>
-	<input
+<div class="relative w-full" {@attach tutupSaatKlikLuar}>
+	<Input
 		{id}
 		{disabled}
-		class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-base focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-slate-50 md:py-2 md:text-sm"
+		class="md:py-2"
 		placeholder={placeholder}
 		value={open ? query : displayLabel || value}
 		onfocus={buka}
@@ -117,30 +131,31 @@
 	{#if open}
 		<ul
 			id={listId}
-			class="absolute z-50 mt-1 max-h-[min(16rem,50vh)] w-full overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+			class="bg-popover text-popover-foreground absolute z-50 mt-1 max-h-[min(16rem,50vh)] w-full overflow-auto rounded-md border py-1 shadow-md"
 			role="listbox"
 		>
 			{#if loading}
-				<li class="px-3 py-2 text-sm text-muted">Mencari…</li>
+				<li class="text-muted-foreground px-3 py-2 text-sm">Mencari…</li>
 			{:else if options.length === 0}
-				<li class="px-3 py-2 text-sm text-muted">Tidak ada hasil</li>
+				<li class="text-muted-foreground px-3 py-2 text-sm">Tidak ada hasil</li>
 			{:else}
 				{#each options as opt, i (opt.value)}
 					<li role="option" aria-selected={i === highlight}>
-						<button
+						<Button
 							type="button"
-							class="flex min-h-11 w-full flex-col px-3 py-2.5 text-left text-sm hover:bg-surface {i ===
-							highlight
-								? 'bg-surface'
-								: ''}"
+							variant="ghost"
+							class={cn(
+								'flex h-auto min-h-11 w-full flex-col items-start justify-center rounded-none px-3 py-2.5 text-left text-sm',
+								i === highlight && 'bg-primary/10 text-primary'
+							)}
 							onmousedown={(e) => e.preventDefault()}
 							onclick={() => pilih(opt)}
 						>
-							<span class="font-medium text-ink">{opt.label}</span>
+							<span class="font-medium">{opt.label}</span>
 							{#if opt.hint}
-								<span class="font-mono text-xs text-muted">{opt.hint}</span>
+								<span class="text-muted-foreground font-mono text-xs">{opt.hint}</span>
 							{/if}
-						</button>
+						</Button>
 					</li>
 				{/each}
 			{/if}

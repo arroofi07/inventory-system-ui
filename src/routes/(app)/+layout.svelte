@@ -3,7 +3,6 @@
 	import AppShell from '$lib/components/layout/AppShell.svelte';
 	import Sidebar from '$lib/components/layout/Sidebar.svelte';
 	import Topbar from '$lib/components/layout/Topbar.svelte';
-	import Toast from '$lib/components/feedback/Toast.svelte';
 	import { pergiKe, resolveAppPath } from '$lib/nav';
 	import { auth } from '$lib/stores/auth.svelte';
 
@@ -59,5 +58,4 @@
 			</div>
 		</div>
 	</AppShell>
-	<Toast />
 {/if}

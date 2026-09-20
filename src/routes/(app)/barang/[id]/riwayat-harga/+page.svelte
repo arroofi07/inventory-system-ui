@@ -3,6 +3,7 @@
 	import DataTable from '$lib/components/data/DataTable.svelte';
 	import type { ColumnDef } from '$lib/components/data/column';
 	import Pagination from '$lib/components/data/Pagination.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { detailBarang, type PageMeta } from '$lib/api/barang';
 	import { riwayatHarga, type PriceChangeLog } from '$lib/api/harga';
 	import { ApiError } from '$lib/api/http';
@@ -78,21 +79,16 @@
 </script>
 
 <div class="space-y-4">
-	<a href={resolveAppPath(`/barang/${id}`)} class="text-sm text-brand-700 underline"
-		>← Kembali ke detail</a
-	>
+	<Button variant="link" class="h-auto p-0" href={resolveAppPath(`/barang/${id}`)}>
+		← Kembali ke detail
+	</Button>
 	<header class="flex flex-wrap items-end justify-between gap-3">
 		<div>
 			<h1 class="font-display text-2xl text-ink">Riwayat harga</h1>
 			<p class="text-sm text-muted">{judul || '…'}</p>
 		</div>
 		{#if auth.punyaIzin('harga.kelola')}
-			<a
-				href={resolveAppPath(`/barang/${id}/harga-massal`)}
-				class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800"
-			>
-				Harga massal
-			</a>
+			<Button href={resolveAppPath(`/barang/${id}/harga-massal`)}>Harga massal</Button>
 		{/if}
 	</header>
 

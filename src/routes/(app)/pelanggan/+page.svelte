@@ -6,6 +6,9 @@
 	import Field from '$lib/components/form/Field.svelte';
 	import Combobox from '$lib/components/form/Combobox.svelte';
 	import AsyncCombobox from '$lib/components/form/AsyncCombobox.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import {
 		CHANNEL_OUTLET_OPTIONS,
 		cariPelangganSelect2,
@@ -113,6 +116,11 @@
 		tampilNonaktif = false;
 		page = 1;
 	}
+
+	function onTampilNonaktifChange(v: boolean | 'indeterminate') {
+		tampilNonaktif = v === true;
+		page = 1;
+	}
 </script>
 
 <div class="space-y-4">
@@ -123,40 +131,17 @@
 		</div>
 		<div class="flex flex-wrap gap-2">
 			{#if bisaEkspor}
-				<button
-					type="button"
-					class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-					onclick={() => void unduhEkspor()}
-				>
-					Ekspor CSV
-				</button>
+				<Button variant="outline" onclick={() => void unduhEkspor()}>Ekspor CSV</Button>
 			{/if}
 			{#if bisaBuat}
-				<button
-					type="button"
-					class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-					onclick={() => void unduhTemplate()}
-				>
-					Template impor
-				</button>
-				<button
-					type="button"
-					class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-					onclick={() => (imporOpen = true)}
-				>
-					Impor CSV
-				</button>
-				<a
-					href={resolveAppPath('/pelanggan/baru')}
-					class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800"
-				>
-					Tambah pelanggan
-				</a>
+				<Button variant="outline" onclick={() => void unduhTemplate()}>Template impor</Button>
+				<Button variant="outline" onclick={() => (imporOpen = true)}>Impor CSV</Button>
+				<Button href={resolveAppPath('/pelanggan/baru')}>Tambah pelanggan</Button>
 			{/if}
 		</div>
 	</header>
 
-	<section class="rounded-[var(--radius-card)] border border-slate-200 bg-white p-4">
+	<section class="rounded-[var(--radius-card)] border border-primary/20 bg-white p-4">
 		<p class="mb-2 text-xs uppercase text-muted">Cari cepat (Select2)</p>
 		<AsyncCombobox
 			bind:value={cariCepat}
@@ -173,9 +158,8 @@
 
 	<FilterBar onreset={resetFilter}>
 		<Field label="Cari" forId="plg-q">
-			<input
+			<Input
 				id="plg-q"
-				class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				placeholder="Kode / nama / telepon"
 				bind:value={q}
 				oninput={() => {
@@ -194,7 +178,7 @@
 			/>
 		</Field>
 		<label class="flex items-center gap-2 pb-2 text-sm text-ink">
-			<input type="checkbox" bind:checked={tampilNonaktif} onchange={() => (page = 1)} />
+			<Checkbox checked={tampilNonaktif} onCheckedChange={onTampilNonaktifChange} />
 			Sertakan nonaktif
 		</label>
 	</FilterBar>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { notifikasiPiutang } from '$lib/api/piutang';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { resolveAppPath } from '$lib/nav';
@@ -32,8 +33,10 @@
 </script>
 
 {#if boleh}
-	<a
-		class="relative inline-flex items-center rounded px-2 py-1 text-sm text-slate-700 hover:bg-slate-100"
+	<Button
+		variant="ghost"
+		size="icon"
+		class="relative"
 		href={resolveAppPath('/piutang/overdue')}
 		aria-label="Notifikasi piutang: {total} item"
 		title="Overdue {overdue} · mendekati JT {nearDue}"
@@ -55,10 +58,10 @@
 		</svg>
 		{#if total > 0}
 			<span
-				class="absolute -right-0.5 -top-0.5 min-w-[1.1rem] rounded-full bg-red-600 px-1 text-center text-[10px] leading-4 text-white"
+				class="absolute -right-0.5 -top-0.5 min-w-[1.1rem] rounded-full bg-destructive px-1 text-center text-[10px] leading-4 text-white"
 			>
 				{total > 99 ? '99+' : total}
 			</span>
 		{/if}
-	</a>
+	</Button>
 {/if}

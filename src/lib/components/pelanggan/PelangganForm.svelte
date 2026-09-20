@@ -2,6 +2,10 @@
 	import Field from '$lib/components/form/Field.svelte';
 	import CurrencyInput from '$lib/components/form/CurrencyInput.svelte';
 	import Combobox from '$lib/components/form/Combobox.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
 	import {
 		CHANNEL_OUTLET_OPTIONS,
 		JENIS_BANGUNAN_OPTIONS,
@@ -82,8 +86,20 @@
 	let prefixTerakhir = $state('');
 
 	const channelOpts = CHANNEL_OUTLET_OPTIONS.map((o) => ({ value: o.value, label: o.label }));
-	const jenisOpts = $derived(opsiDenganNilaiLama(JENIS_BANGUNAN_OPTIONS, jenisBangunan));
-	const statusOpts = $derived(opsiDenganNilaiLama(STATUS_BANGUNAN_OPTIONS, statusBangunan));
+	const jenisOpts = $derived([
+		{ value: '', label: 'Pilih…' },
+		...opsiDenganNilaiLama(JENIS_BANGUNAN_OPTIONS, jenisBangunan)
+	]);
+	const statusOpts = $derived([
+		{ value: '', label: 'Pilih…' },
+		...opsiDenganNilaiLama(STATUS_BANGUNAN_OPTIONS, statusBangunan)
+	]);
+	const jenisTriggerLabel = $derived(
+		jenisOpts.find((o) => o.value === jenisBangunan)?.label ?? 'Pilih…'
+	);
+	const statusTriggerLabel = $derived(
+		statusOpts.find((o) => o.value === statusBangunan)?.label ?? 'Pilih…'
+	);
 
 	const prefixOtomatis = $derived(prefixKodePelangganDariNama(namaPelanggan));
 
@@ -156,9 +172,8 @@
 		<h2 class="sm:col-span-2 font-display text-lg text-ink">Identitas</h2>
 		{#if mode === 'buat'}
 			<Field label="Nama pelanggan" required forId="nama" error={errors.nama_pelanggan}>
-				<input
+				<Input
 					id="nama"
-					class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 					bind:value={namaPelanggan}
 					disabled={disabled || menyimpan}
 					required
@@ -171,9 +186,9 @@
 				error={errors.kode_pelanggan}
 				hint="3 huruf awal tiap kata + 4 angka (contoh: Toko Budiman → TOKBUD5187). Bisa diubah manual."
 			>
-				<input
+				<Input
 					id="kode"
-					class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
+					class="font-mono"
 					value={kodeBuat}
 					oninput={handleKodeBuatInput}
 					disabled={disabled || menyimpan}
@@ -182,9 +197,9 @@
 			</Field>
 		{:else}
 			<Field label="Kode pelanggan" required forId="kode" error={errors.kode_pelanggan}>
-				<input
+				<Input
 					id="kode"
-					class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm disabled:bg-slate-50"
+					class="font-mono"
 					bind:value={kodePelanggan}
 					disabled={kodeTerkunci || disabled || menyimpan}
 					required
@@ -195,9 +210,8 @@
 				{/if}
 			</Field>
 			<Field label="Nama pelanggan" required forId="nama" error={errors.nama_pelanggan}>
-				<input
+				<Input
 					id="nama"
-					class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 					bind:value={namaPelanggan}
 					disabled={disabled || menyimpan}
 					required
@@ -206,19 +220,17 @@
 			</Field>
 		{/if}
 		<Field label="Tanggal registrasi" required forId="tgl" error={errors.tgl_registrasi}>
-			<input
+			<Input
 				id="tgl"
 				type="date"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				bind:value={tglRegistrasi}
 				disabled={disabled || menyimpan}
 				required
 			/>
 		</Field>
 		<Field label="Telepon" required forId="phone" error={errors.phone}>
-			<input
+			<Input
 				id="phone"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				bind:value={phone}
 				disabled={disabled || menyimpan}
 				required
@@ -238,148 +250,136 @@
 	<section class="grid gap-4 sm:grid-cols-2">
 		<h2 class="sm:col-span-2 font-display text-lg text-ink">Wilayah & alamat</h2>
 		<Field label="Territory" required forId="territory" error={errors.territory}>
-			<input
+			<Input
 				id="territory"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				bind:value={territory}
 				disabled={disabled || menyimpan}
 				required
 			/>
 		</Field>
 		<Field label="Distrik" required forId="distrik" error={errors.distrik}>
-			<input
+			<Input
 				id="distrik"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				bind:value={distrik}
 				disabled={disabled || menyimpan}
 				required
 			/>
 		</Field>
 		<Field label="Alamat toko" required forId="alamat" error={errors.alamat_toko}>
-			<textarea
+			<Textarea
 				id="alamat"
-				class="min-h-[72px] w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2"
+				class="min-h-18 sm:col-span-2"
 				bind:value={alamatToko}
 				disabled={disabled || menyimpan}
 				required
-			></textarea>
+			/>
 		</Field>
 		<Field label="RT/RW" forId="rtrw" error={errors.rt_rw}>
-			<input
+			<Input
 				id="rtrw"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				bind:value={rtRw}
 				disabled={disabled || menyimpan}
 				maxlength={20}
 			/>
 		</Field>
 		<Field label="Provinsi" required forId="provinsi" error={errors.provinsi}>
-			<input
+			<Input
 				id="provinsi"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				bind:value={provinsi}
 				disabled={disabled || menyimpan}
 				required
 			/>
 		</Field>
 		<Field label="Kabupaten" required forId="kabupaten" error={errors.kabupaten}>
-			<input
+			<Input
 				id="kabupaten"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				bind:value={kabupaten}
 				disabled={disabled || menyimpan}
 				required
 			/>
 		</Field>
 		<Field label="Kecamatan" required forId="kecamatan" error={errors.kecamatan}>
-			<input
+			<Input
 				id="kecamatan"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				bind:value={kecamatan}
 				disabled={disabled || menyimpan}
 				required
 			/>
 		</Field>
 		<Field label="Kelurahan" required forId="kelurahan" error={errors.kelurahan}>
-			<input
+			<Input
 				id="kelurahan"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				bind:value={kelurahan}
 				disabled={disabled || menyimpan}
 				required
 			/>
 		</Field>
 		<Field label="Kode pos" forId="kodepos" error={errors.kode_pos}>
-			<input
+			<Input
 				id="kodepos"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				bind:value={kodePos}
 				disabled={disabled || menyimpan}
 				maxlength={10}
 			/>
 		</Field>
 		<Field label="Alamat pengantaran" forId="antar" error={errors.alamat_pengantaran_barang}>
-			<textarea
+			<Textarea
 				id="antar"
-				class="min-h-[56px] w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+				class="min-h-14"
 				bind:value={alamatPengantaran}
 				disabled={disabled || menyimpan}
-			></textarea>
+			/>
 		</Field>
 	</section>
 
 	<section class="grid gap-4 sm:grid-cols-2">
 		<h2 class="sm:col-span-2 font-display text-lg text-ink">Pajak & kredit (opsional)</h2>
 		<Field label="NPWP / NIK" forId="npwp" error={errors.npwp_nik}>
-			<input
+			<Input
 				id="npwp"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				bind:value={npwpNik}
 				disabled={disabled || menyimpan}
 				maxlength={32}
 			/>
 		</Field>
 		<Field label="Nama pemilik NPWP/NIK" forId="pemilik" error={errors.nama_pemilik_npwp_nik}>
-			<input
+			<Input
 				id="pemilik"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				bind:value={namaPemilikNpwpNik}
 				disabled={disabled || menyimpan}
 			/>
 		</Field>
 		<Field label="Alamat NPWP/NIK" forId="alamat-npwp" error={errors.alamat_npwp_nik}>
-			<textarea
+			<Textarea
 				id="alamat-npwp"
-				class="min-h-[56px] w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2"
+				class="min-h-14 sm:col-span-2"
 				bind:value={alamatNpwpNik}
 				disabled={disabled || menyimpan}
-			></textarea>
+			/>
 		</Field>
 		<Field label="Jenis bangunan" forId="jenis" error={errors.jenis_bangunan}>
-			<select
-				id="jenis"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-				bind:value={jenisBangunan}
-				disabled={disabled || menyimpan}
-			>
-				<option value="">Pilih…</option>
-				{#each jenisOpts as opsi (opsi.value)}
-					<option value={opsi.value}>{opsi.label}</option>
-				{/each}
-			</select>
+			<Select.Root type="single" bind:value={jenisBangunan} disabled={disabled || menyimpan}>
+				<Select.Trigger id="jenis" class="w-full">
+					{jenisTriggerLabel}
+				</Select.Trigger>
+				<Select.Content>
+					{#each jenisOpts as opsi (opsi.value || '__empty__')}
+						<Select.Item value={opsi.value} label={opsi.label}>{opsi.label}</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
 		</Field>
 		<Field label="Status bangunan" forId="status-bang" error={errors.status_bangunan}>
-			<select
-				id="status-bang"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-				bind:value={statusBangunan}
-				disabled={disabled || menyimpan}
-			>
-				<option value="">Pilih…</option>
-				{#each statusOpts as opsi (opsi.value)}
-					<option value={opsi.value}>{opsi.label}</option>
-				{/each}
-			</select>
+			<Select.Root type="single" bind:value={statusBangunan} disabled={disabled || menyimpan}>
+				<Select.Trigger id="status-bang" class="w-full">
+					{statusTriggerLabel}
+				</Select.Trigger>
+				<Select.Content>
+					{#each statusOpts as opsi (opsi.value || '__empty__')}
+						<Select.Item value={opsi.value} label={opsi.label}>{opsi.label}</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
 		</Field>
 		<Field
 			label="Nominal pengambilan pertama"
@@ -394,12 +394,8 @@
 	</section>
 
 	<div class="flex gap-2">
-		<button
-			type="submit"
-			class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-			disabled={disabled || menyimpan}
-		>
+		<Button type="submit" disabled={disabled || menyimpan}>
 			{menyimpan ? 'Menyimpan…' : mode === 'buat' ? 'Simpan pelanggan' : 'Simpan perubahan'}
-		</button>
+		</Button>
 	</div>
 </form>

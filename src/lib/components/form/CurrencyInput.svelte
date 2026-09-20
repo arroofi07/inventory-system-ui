@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
+	import { Input } from '$lib/components/ui/input/index.js';
 	import {
 		formatRupiah,
 		formatRupiahKetikan,
@@ -52,10 +53,11 @@
 </script>
 
 <div class="relative">
-	<span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted"
+	<span
+		class="pointer-events-none absolute top-1/2 left-3 z-10 -translate-y-1/2 text-sm text-primary/70"
 		>Rp</span
 	>
-	<input
+	<Input
 		{id}
 		{name}
 		{disabled}
@@ -64,7 +66,7 @@
 		type="text"
 		inputmode="decimal"
 		autocomplete="off"
-		class="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-right font-mono text-base tabular-nums focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-slate-50 md:py-2 md:text-sm"
+		class="py-2.5 pr-3 pl-10 text-right font-mono text-base tabular-nums md:py-2"
 		value={tampilan}
 		oninput={onInput}
 		onfocus={onFocus}

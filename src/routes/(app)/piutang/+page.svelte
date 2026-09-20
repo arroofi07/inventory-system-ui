@@ -1,11 +1,15 @@
 <script lang="ts">
 	import Pagination from '$lib/components/data/Pagination.svelte';
 	import FilterBar from '$lib/components/data/FilterBar.svelte';
+	import StatCard from '$lib/components/data/StatCard.svelte';
 	import Field from '$lib/components/form/Field.svelte';
 	import Combobox from '$lib/components/form/Combobox.svelte';
 	import Skeleton from '$lib/components/feedback/Skeleton.svelte';
 	import EmptyState from '$lib/components/data/EmptyState.svelte';
 	import BayarModal from '$lib/components/piutang/BayarModal.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import * as Table from '$lib/components/ui/table/index.js';
 	import {
 		daftarPiutang,
 		unduhEksporPiutang,
@@ -132,11 +136,11 @@
 			case 'normal':
 				return { text: 'Normal', className: 'bg-emerald-100 text-emerald-800' };
 			case 'tanpa_jatuh_tempo':
-				return { text: 'Tanpa JT', className: 'bg-slate-100 text-slate-600' };
+				return { text: 'Tanpa JT', className: 'bg-primary/10 text-muted-foreground' };
 			case 'lunas':
-				return { text: 'Lunas', className: 'bg-slate-100 text-slate-700' };
+				return { text: 'Lunas', className: 'bg-primary/10 text-foreground' };
 			default:
-				return { text: k || '—', className: 'bg-slate-100 text-slate-600' };
+				return { text: k || '—', className: 'bg-primary/10 text-muted-foreground' };
 		}
 	}
 
@@ -164,60 +168,41 @@
 			</p>
 		</div>
 		<div class="flex flex-wrap gap-2">
-			<a
+			<Button
+				variant="outline"
+				class="border-red-200 bg-red-50 text-red-900 hover:bg-red-100"
 				href={resolveAppPath('/piutang/overdue')}
-				class="rounded border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-900"
 			>
 				Overdue
-			</a>
+			</Button>
 			{#if bisaEkspor}
-				<button
-					type="button"
-					class="rounded border border-slate-300 bg-white px-4 py-2 text-sm"
-					onclick={() => void unduh()}
-				>
-					Ekspor CSV
-				</button>
+				<Button variant="outline" onclick={() => void unduh()}>Ekspor CSV</Button>
 			{/if}
 		</div>
 	</header>
 
 	<div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-		<div class="rounded border border-slate-200 bg-white px-3 py-2">
-			<p class="text-xs text-slate-500">Total nilai</p>
-			<p class="tabular-nums text-sm font-semibold">{formatRupiah(ringkasan.total_nilai)}</p>
-		</div>
-		<div class="rounded border border-slate-200 bg-white px-3 py-2">
-			<p class="text-xs text-slate-500">Total dibayar</p>
-			<p class="tabular-nums text-sm font-semibold">{formatRupiah(ringkasan.total_dibayar)}</p>
-		</div>
-		<div class="rounded border border-slate-200 bg-white px-3 py-2">
-			<p class="text-xs text-slate-500">Total piutang</p>
-			<p class="tabular-nums text-sm font-semibold">{formatRupiah(ringkasan.total_piutang)}</p>
-		</div>
-		<div class="rounded border border-red-200 bg-red-50 px-3 py-2">
-			<p class="text-xs text-red-700">Piutang overdue</p>
-			<p class="tabular-nums text-sm font-semibold text-red-900">
-				{formatRupiah(ringkasan.piutang_overdue)}
-			</p>
-		</div>
-		<div class="rounded border border-slate-200 bg-white px-3 py-2">
-			<p class="text-xs text-slate-500">Jumlah transaksi</p>
-			<p class="tabular-nums text-sm font-semibold">{ringkasan.jumlah_transaksi}</p>
-		</div>
-		<div class="rounded border border-red-200 bg-red-50 px-3 py-2">
-			<p class="text-xs text-red-700">Transaksi overdue</p>
-			<p class="tabular-nums text-sm font-semibold text-red-900">
-				{ringkasan.jumlah_transaksi_overdue}
-			</p>
-		</div>
+		<StatCard label="Total nilai" value={formatRupiah(ringkasan.total_nilai)} />
+		<StatCard label="Total dibayar" value={formatRupiah(ringkasan.total_dibayar)} />
+		<StatCard label="Total piutang" value={formatRupiah(ringkasan.total_piutang)} />
+		<StatCard
+			label="Piutang overdue"
+			value={formatRupiah(ringkasan.piutang_overdue)}
+			tone="bahaya"
+		/>
+		<StatCard label="Jumlah transaksi" value={String(ringkasan.jumlah_transaksi)} />
+		<StatCard
+			label="Transaksi overdue"
+			value={String(ringkasan.jumlah_transaksi_overdue)}
+			tone="bahaya"
+		/>
 	</div>
 
 	<FilterBar onreset={resetFilter}>
 		<Field label="Cari" forId="piu-q">
-			<input
+			<Input
 				id="piu-q"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+				class="w-full"
 				placeholder="Kode/nama, no transaksi…"
 				bind:value={q}
 			/>
@@ -232,28 +217,13 @@
 			<Combobox id="piu-dt" options={dateTypeOpts} bind:value={dateType} />
 		</Field>
 		<Field label="Dari" forId="piu-df">
-			<input
-				id="piu-df"
-				type="date"
-				class="w-full rounded-lg border px-3 py-2 text-sm"
-				bind:value={dateFrom}
-			/>
+			<Input id="piu-df" type="date" class="w-full" bind:value={dateFrom} />
 		</Field>
 		<Field label="Sampai" forId="piu-ds">
-			<input
-				id="piu-ds"
-				type="date"
-				class="w-full rounded-lg border px-3 py-2 text-sm"
-				bind:value={dateTo}
-			/>
+			<Input id="piu-ds" type="date" class="w-full" bind:value={dateTo} />
 		</Field>
 		<Field label="Brand" forId="piu-br">
-			<input
-				id="piu-br"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-				placeholder="Brand"
-				bind:value={brand}
-			/>
+			<Input id="piu-br" class="w-full" placeholder="Brand" bind:value={brand} />
 		</Field>
 	</FilterBar>
 
@@ -262,65 +232,72 @@
 	{:else if rows.length === 0}
 		<EmptyState title="Tidak ada piutang" description="Ubah filter atau catat transaksi approved." />
 	{:else}
-		<div class="overflow-x-auto rounded border border-slate-200 bg-white">
-			<table class="min-w-full text-left text-sm">
-				<thead class="border-b bg-slate-50 text-xs uppercase text-slate-500">
-					<tr>
-						<th class="px-3 py-2">No / ID</th>
-						<th class="px-3 py-2">Pelanggan</th>
-						<th class="px-3 py-2">Tanggal</th>
-						<th class="px-3 py-2 text-right">Total</th>
-						<th class="px-3 py-2 text-right">Dibayar</th>
-						<th class="px-3 py-2 text-right">Sisa</th>
-						<th class="px-3 py-2">Status</th>
-						<th class="px-3 py-2">Kategori</th>
-						<th class="px-3 py-2">Aksi</th>
-					</tr>
-				</thead>
-				<tbody>
+		<div class="overflow-hidden rounded-[var(--radius-card)] border border-primary/20 bg-white">
+			<Table.Root>
+				<Table.Header>
+					<Table.Row class="hover:bg-transparent">
+						<Table.Head class="px-3 py-2">No / ID</Table.Head>
+						<Table.Head class="px-3 py-2">Pelanggan</Table.Head>
+						<Table.Head class="px-3 py-2">Tanggal</Table.Head>
+						<Table.Head class="px-3 py-2 text-right">Total</Table.Head>
+						<Table.Head class="px-3 py-2 text-right">Dibayar</Table.Head>
+						<Table.Head class="px-3 py-2 text-right">Sisa</Table.Head>
+						<Table.Head class="px-3 py-2">Status</Table.Head>
+						<Table.Head class="px-3 py-2">Kategori</Table.Head>
+						<Table.Head class="px-3 py-2">Aksi</Table.Head>
+					</Table.Row>
+				</Table.Header>
+				<Table.Body>
 					{#each rows as r (r.transaksi_id)}
 						{@const kat = badgeKat(r.kategori_jatuh_tempo)}
-						<tr class="border-b border-slate-100">
-							<td class="px-3 py-2 tabular-nums">
+						<Table.Row>
+							<Table.Cell class="px-3 py-2 tabular-nums">
 								{r.no_transaksi ?? `#${r.transaksi_id}`}
-							</td>
-							<td class="px-3 py-2">
-								<a
-									class="text-brand-700 underline"
-									href={resolveAppPath(`/piutang/pelanggan/${encodeURIComponent(r.kode_pelanggan)}`)}
+							</Table.Cell>
+							<Table.Cell class="px-3 py-2">
+								<Button
+									variant="link"
+									class="h-auto p-0"
+									href={resolveAppPath(
+										`/piutang/pelanggan/${encodeURIComponent(r.kode_pelanggan)}`
+									)}
 								>
 									{r.kode_pelanggan}
-								</a>
+								</Button>
 								<div class="text-xs text-muted">{r.nama_pelanggan}</div>
-							</td>
-							<td class="px-3 py-2 whitespace-nowrap">{r.tanggal?.slice(0, 10) ?? '—'}</td>
-							<td class="px-3 py-2 text-right tabular-nums">{formatRupiah(r.total_akhir)}</td>
-							<td class="px-3 py-2 text-right tabular-nums">{formatRupiah(r.jumlah_dibayar)}</td>
-							<td class="px-3 py-2 text-right tabular-nums">{formatRupiah(r.sisa_hutang)}</td>
-							<td class="px-3 py-2">{r.status_pembayaran}</td>
-							<td class="px-3 py-2">
+							</Table.Cell>
+							<Table.Cell class="px-3 py-2 whitespace-nowrap"
+								>{r.tanggal?.slice(0, 10) ?? '—'}</Table.Cell
+							>
+							<Table.Cell class="px-3 py-2 text-right tabular-nums"
+								>{formatRupiah(r.total_akhir)}</Table.Cell
+							>
+							<Table.Cell class="px-3 py-2 text-right tabular-nums"
+								>{formatRupiah(r.jumlah_dibayar)}</Table.Cell
+							>
+							<Table.Cell class="px-3 py-2 text-right tabular-nums"
+								>{formatRupiah(r.sisa_hutang)}</Table.Cell
+							>
+							<Table.Cell class="px-3 py-2">{r.status_pembayaran}</Table.Cell>
+							<Table.Cell class="px-3 py-2">
 								<span class="rounded px-1.5 py-0.5 text-xs {kat.className}">{kat.text}</span>
 								{#if r.hari_terlambat > 0}
 									<span class="ml-1 text-xs text-red-700">+{r.hari_terlambat}h</span>
 								{/if}
-							</td>
-							<td class="px-3 py-2">
+							</Table.Cell>
+							<Table.Cell class="px-3 py-2">
 								{#if bisaBayar && r.status_pembayaran !== 'lunas'}
-									<button
-										type="button"
-										class="text-sm text-brand-700 underline"
-										onclick={() => bukaBayar(r)}
-									>
+									<Button variant="link" class="h-auto p-0" onclick={() => bukaBayar(r)}>
 										Bayar
-									</button>
+									</Button>
 								{:else}
 									—
 								{/if}
-							</td>
-						</tr>
+							</Table.Cell>
+						</Table.Row>
 					{/each}
-				</tbody>
-			</table>
+				</Table.Body>
+			</Table.Root>
 		</div>
 		<Pagination
 			page={meta.page}

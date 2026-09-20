@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import * as FieldUi from '$lib/components/ui/field/index.js';
 
 	interface Props {
 		label?: string;
@@ -20,18 +21,18 @@
 	}: Props = $props();
 </script>
 
-<div class="flex flex-col gap-1 text-sm">
+<FieldUi.Field data-invalid={error ? 'true' : undefined}>
 	{#if label}
-		<label class="font-medium text-ink" for={forId}>
+		<FieldUi.FieldLabel for={forId}>
 			{label}
-			{#if required}<span class="text-bahaya" aria-hidden="true">*</span>{/if}
-		</label>
+			{#if required}<span class="text-destructive" aria-hidden="true">*</span>{/if}
+		</FieldUi.FieldLabel>
 	{/if}
 	{@render children()}
 	{#if hint && !error}
-		<p class="text-xs text-muted">{hint}</p>
+		<FieldUi.FieldDescription>{hint}</FieldUi.FieldDescription>
 	{/if}
 	{#if error}
-		<p class="text-xs text-bahaya" role="alert">{error}</p>
+		<FieldUi.FieldError>{error}</FieldUi.FieldError>
 	{/if}
-</div>
+</FieldUi.Field>

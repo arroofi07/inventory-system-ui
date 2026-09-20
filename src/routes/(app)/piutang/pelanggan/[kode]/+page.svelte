@@ -1,9 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Pagination from '$lib/components/data/Pagination.svelte';
+	import StatCard from '$lib/components/data/StatCard.svelte';
 	import Skeleton from '$lib/components/feedback/Skeleton.svelte';
 	import EmptyState from '$lib/components/data/EmptyState.svelte';
 	import BayarModal from '$lib/components/piutang/BayarModal.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Table from '$lib/components/ui/table/index.js';
 	import {
 		piutangPelanggan,
 		riwayatPiutangPelanggan,
@@ -69,126 +73,136 @@
 
 <div class="space-y-4">
 	<header>
-		<a class="text-sm text-brand-700 underline" href={resolveAppPath('/piutang')}>← Piutang</a>
+		<Button variant="link" class="h-auto p-0" href={resolveAppPath('/piutang')}>← Piutang</Button>
 		<h1 class="font-display mt-2 text-2xl text-ink">{namaPelanggan}</h1>
 		<p class="text-sm text-muted">Kode {kode}</p>
 	</header>
 
 	<div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-		<div class="rounded border border-slate-200 bg-white px-3 py-2">
-			<p class="text-xs text-slate-500">Total nilai</p>
-			<p class="tabular-nums text-sm font-semibold">{formatRupiah(ringkasan.total_nilai)}</p>
-		</div>
-		<div class="rounded border border-slate-200 bg-white px-3 py-2">
-			<p class="text-xs text-slate-500">Dibayar</p>
-			<p class="tabular-nums text-sm font-semibold">{formatRupiah(ringkasan.total_dibayar)}</p>
-		</div>
-		<div class="rounded border border-slate-200 bg-white px-3 py-2">
-			<p class="text-xs text-slate-500">Sisa piutang</p>
-			<p class="tabular-nums text-sm font-semibold">{formatRupiah(ringkasan.total_piutang)}</p>
-		</div>
-		<div class="rounded border border-red-200 bg-red-50 px-3 py-2">
-			<p class="text-xs text-red-700">Overdue</p>
-			<p class="tabular-nums text-sm font-semibold text-red-900">
-				{formatRupiah(ringkasan.piutang_overdue)}
-			</p>
-		</div>
+		<StatCard label="Total nilai" value={formatRupiah(ringkasan.total_nilai)} />
+		<StatCard label="Dibayar" value={formatRupiah(ringkasan.total_dibayar)} />
+		<StatCard label="Sisa piutang" value={formatRupiah(ringkasan.total_piutang)} />
+		<StatCard
+			label="Overdue"
+			value={formatRupiah(ringkasan.piutang_overdue)}
+			tone="bahaya"
+		/>
 	</div>
 
-	<section class="space-y-2">
-		<h2 class="font-display text-lg text-ink">Transaksi</h2>
-		{#if loading}
-			<Skeleton class="h-32 w-full" />
-		{:else if rows.length === 0}
-			<EmptyState title="Tidak ada transaksi" description="Pelanggan ini tidak punya piutang." />
-		{:else}
-			<div class="overflow-x-auto rounded border border-slate-200 bg-white">
-				<table class="min-w-full text-left text-sm">
-					<thead class="border-b bg-slate-50 text-xs uppercase text-slate-500">
-						<tr>
-							<th class="px-3 py-2">No / ID</th>
-							<th class="px-3 py-2">Tanggal</th>
-							<th class="px-3 py-2 text-right">Total</th>
-							<th class="px-3 py-2 text-right">Dibayar</th>
-							<th class="px-3 py-2 text-right">Sisa</th>
-							<th class="px-3 py-2">Status</th>
-							<th class="px-3 py-2">Aksi</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each rows as r (r.transaksi_id)}
-							<tr class="border-b border-slate-100">
-								<td class="px-3 py-2 tabular-nums">{r.no_transaksi ?? `#${r.transaksi_id}`}</td>
-								<td class="px-3 py-2 whitespace-nowrap">{r.tanggal?.slice(0, 10) ?? '—'}</td>
-								<td class="px-3 py-2 text-right tabular-nums">{formatRupiah(r.total_akhir)}</td>
-								<td class="px-3 py-2 text-right tabular-nums">{formatRupiah(r.jumlah_dibayar)}</td>
-								<td class="px-3 py-2 text-right tabular-nums">{formatRupiah(r.sisa_hutang)}</td>
-								<td class="px-3 py-2">{r.status_pembayaran}</td>
-								<td class="px-3 py-2">
-									{#if bisaBayar && r.status_pembayaran !== 'lunas'}
-										<button
-											type="button"
-											class="text-sm text-brand-700 underline"
-											onclick={() => {
-												bayarRow = r;
-												bayarOpen = true;
-											}}
-										>
-											Bayar
-										</button>
-									{:else}
-										—
-									{/if}
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
-			<Pagination
-				page={meta.page}
-				total={meta.total}
-				totalPages={meta.total_pages}
-				onpage={(p) => (pageNum = p)}
-			/>
-		{/if}
-	</section>
+	<Card.Root class="gap-0 border border-primary/20 p-4 shadow-none ring-0">
+		<Card.Header class="p-0 pb-3">
+			<Card.Title class="font-display text-lg text-ink">Transaksi</Card.Title>
+		</Card.Header>
+		<Card.Content class="space-y-2 p-0">
+			{#if loading}
+				<Skeleton class="h-32 w-full" />
+			{:else if rows.length === 0}
+				<EmptyState title="Tidak ada transaksi" description="Pelanggan ini tidak punya piutang." />
+			{:else}
+				<div class="overflow-hidden rounded-[var(--radius-card)] border border-primary/20 bg-white">
+					<Table.Root>
+						<Table.Header>
+							<Table.Row class="hover:bg-transparent">
+								<Table.Head class="px-3 py-2">No / ID</Table.Head>
+								<Table.Head class="px-3 py-2">Tanggal</Table.Head>
+								<Table.Head class="px-3 py-2 text-right">Total</Table.Head>
+								<Table.Head class="px-3 py-2 text-right">Dibayar</Table.Head>
+								<Table.Head class="px-3 py-2 text-right">Sisa</Table.Head>
+								<Table.Head class="px-3 py-2">Status</Table.Head>
+								<Table.Head class="px-3 py-2">Aksi</Table.Head>
+							</Table.Row>
+						</Table.Header>
+						<Table.Body>
+							{#each rows as r (r.transaksi_id)}
+								<Table.Row>
+									<Table.Cell class="px-3 py-2 tabular-nums"
+										>{r.no_transaksi ?? `#${r.transaksi_id}`}</Table.Cell
+									>
+									<Table.Cell class="px-3 py-2 whitespace-nowrap"
+										>{r.tanggal?.slice(0, 10) ?? '—'}</Table.Cell
+									>
+									<Table.Cell class="px-3 py-2 text-right tabular-nums"
+										>{formatRupiah(r.total_akhir)}</Table.Cell
+									>
+									<Table.Cell class="px-3 py-2 text-right tabular-nums"
+										>{formatRupiah(r.jumlah_dibayar)}</Table.Cell
+									>
+									<Table.Cell class="px-3 py-2 text-right tabular-nums"
+										>{formatRupiah(r.sisa_hutang)}</Table.Cell
+									>
+									<Table.Cell class="px-3 py-2">{r.status_pembayaran}</Table.Cell>
+									<Table.Cell class="px-3 py-2">
+										{#if bisaBayar && r.status_pembayaran !== 'lunas'}
+											<Button
+												variant="link"
+												class="h-auto p-0"
+												onclick={() => {
+													bayarRow = r;
+													bayarOpen = true;
+												}}
+											>
+												Bayar
+											</Button>
+										{:else}
+											—
+										{/if}
+									</Table.Cell>
+								</Table.Row>
+							{/each}
+						</Table.Body>
+					</Table.Root>
+				</div>
+				<Pagination
+					page={meta.page}
+					total={meta.total}
+					totalPages={meta.total_pages}
+					onpage={(p) => (pageNum = p)}
+				/>
+			{/if}
+		</Card.Content>
+	</Card.Root>
 
-	<section class="space-y-2">
-		<h2 class="font-display text-lg text-ink">Riwayat pembayaran</h2>
-		{#if riwayat.length === 0}
-			<p class="text-sm text-muted">Belum ada riwayat.</p>
-		{:else}
-			<div class="overflow-x-auto rounded border border-slate-200 bg-white">
-				<table class="min-w-full text-left text-sm">
-					<thead class="border-b bg-slate-50 text-xs uppercase text-slate-500">
-						<tr>
-							<th class="px-3 py-2">Waktu</th>
-							<th class="px-3 py-2 text-right">Nominal</th>
-							<th class="px-3 py-2">Status</th>
-							<th class="px-3 py-2">Metode</th>
-							<th class="px-3 py-2">Keterangan</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each riwayat as h (h.id)}
-							<tr class="border-b border-slate-100">
-								<td class="px-3 py-2 whitespace-nowrap">{h.changed_at?.slice(0, 19) ?? '—'}</td>
-								<td class="px-3 py-2 text-right tabular-nums"
-									>{formatRupiah(h.nominal_pembayaran)}</td
-								>
-								<td class="px-3 py-2 text-xs">
-									{h.old_status ?? '—'} → {h.new_status ?? '—'}
-								</td>
-								<td class="px-3 py-2">{h.metode_pembayaran ?? '—'}</td>
-								<td class="px-3 py-2 text-muted">{h.keterangan ?? '—'}</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
-		{/if}
-	</section>
+	<Card.Root class="gap-0 border border-primary/20 p-4 shadow-none ring-0">
+		<Card.Header class="p-0 pb-3">
+			<Card.Title class="font-display text-lg text-ink">Riwayat pembayaran</Card.Title>
+		</Card.Header>
+		<Card.Content class="p-0">
+			{#if riwayat.length === 0}
+				<p class="text-sm text-muted">Belum ada riwayat.</p>
+			{:else}
+				<div class="overflow-hidden rounded-[var(--radius-card)] border border-primary/20 bg-white">
+					<Table.Root>
+						<Table.Header>
+							<Table.Row class="hover:bg-transparent">
+								<Table.Head class="px-3 py-2">Waktu</Table.Head>
+								<Table.Head class="px-3 py-2 text-right">Nominal</Table.Head>
+								<Table.Head class="px-3 py-2">Status</Table.Head>
+								<Table.Head class="px-3 py-2">Metode</Table.Head>
+								<Table.Head class="px-3 py-2">Keterangan</Table.Head>
+							</Table.Row>
+						</Table.Header>
+						<Table.Body>
+							{#each riwayat as h (h.id)}
+								<Table.Row>
+									<Table.Cell class="px-3 py-2 whitespace-nowrap"
+										>{h.changed_at?.slice(0, 19) ?? '—'}</Table.Cell
+									>
+									<Table.Cell class="px-3 py-2 text-right tabular-nums"
+										>{formatRupiah(h.nominal_pembayaran)}</Table.Cell
+									>
+									<Table.Cell class="px-3 py-2 text-xs">
+										{h.old_status ?? '—'} → {h.new_status ?? '—'}
+									</Table.Cell>
+									<Table.Cell class="px-3 py-2">{h.metode_pembayaran ?? '—'}</Table.Cell>
+									<Table.Cell class="px-3 py-2 text-muted">{h.keterangan ?? '—'}</Table.Cell>
+								</Table.Row>
+							{/each}
+						</Table.Body>
+					</Table.Root>
+				</div>
+			{/if}
+		</Card.Content>
+	</Card.Root>
 </div>
 
 <BayarModal bind:open={bayarOpen} row={bayarRow} onsukses={() => void muat()} />

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Badge from '$lib/components/data/Badge.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
 	import {
 		detailBarang,
 		pathTambahStok,
@@ -59,7 +61,9 @@
 </script>
 
 <div class="space-y-4">
-	<a href={resolveAppPath('/barang')} class="text-sm text-brand-700 underline">← Kembali ke daftar</a>
+	<Button variant="link" class="h-auto p-0" href={resolveAppPath('/barang')}>
+		← Kembali ke daftar
+	</Button>
 
 	{#if loading}
 		<p class="text-sm text-muted">Memuat…</p>
@@ -81,59 +85,39 @@
 		</header>
 
 		<section class="grid gap-3 sm:grid-cols-3">
-			<div class="rounded-[var(--radius-card)] border border-slate-200 bg-white p-4">
+			<Card.Root class="gap-0 border p-4 shadow-none ring-0">
 				<p class="text-xs uppercase text-muted">Stok tersedia</p>
 				<p class="font-display text-3xl tabular-nums">{barang.stok_tersedia}</p>
 				<p class="text-xs text-muted">Sumber: saldo ledger resmi</p>
-			</div>
-			<div class="rounded-[var(--radius-card)] border border-slate-200 bg-white p-4">
+			</Card.Root>
+			<Card.Root class="gap-0 border p-4 shadow-none ring-0">
 				<p class="text-xs uppercase text-muted">Min / reorder</p>
 				<p class="text-lg tabular-nums">{barang.min_stock} / {barang.reorder_point}</p>
-			</div>
-			<div class="rounded-[var(--radius-card)] border border-slate-200 bg-white p-4">
+			</Card.Root>
+			<Card.Root class="gap-0 border p-4 shadow-none ring-0">
 				<p class="text-xs uppercase text-muted">Alokasi</p>
 				<p class="text-lg">{barang.metode_alokasi}</p>
 				<p class="text-xs text-muted">Alert exp {barang.expiry_alert_days} hari</p>
-			</div>
+			</Card.Root>
 		</section>
 
 		<div class="flex flex-wrap gap-2">
 			{#if bisaTambahStok && barang.is_active}
-				<a
-					href={resolveAppPath(pathTambahStok(barang.kode_barang))}
-					class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800"
-				>
-					Tambah stok
-				</a>
+				<Button href={resolveAppPath(pathTambahStok(barang.kode_barang))}>Tambah stok</Button>
 			{/if}
 			{#if bisaHarga}
-				<a
-					href={resolveAppPath(`/barang/${barang.id}/harga-massal`)}
-					class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-surface"
-				>
+				<Button variant="outline" href={resolveAppPath(`/barang/${barang.id}/harga-massal`)}>
 					Harga massal
-				</a>
-				<a
-					href={resolveAppPath(`/barang/${barang.id}/riwayat-harga`)}
-					class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-surface"
-				>
+				</Button>
+				<Button variant="outline" href={resolveAppPath(`/barang/${barang.id}/riwayat-harga`)}>
 					Riwayat harga
-				</a>
+				</Button>
 			{/if}
 			{#if bisaKelola}
-				<a
-					href={resolveAppPath(`/barang/${barang.id}/ubah`)}
-					class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-surface"
-				>
-					Ubah
-				</a>
-				<button
-					type="button"
-					class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-surface"
-					onclick={() => void toggleAktif()}
-				>
+				<Button variant="outline" href={resolveAppPath(`/barang/${barang.id}/ubah`)}>Ubah</Button>
+				<Button variant="outline" onclick={() => void toggleAktif()}>
 					{barang.is_active ? 'Nonaktifkan' : 'Aktifkan kembali'}
-				</button>
+				</Button>
 			{/if}
 		</div>
 	{/if}

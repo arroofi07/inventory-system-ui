@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { Skeleton as UiSkeleton } from '$lib/components/ui/skeleton/index.js';
+
 	let { class: className = '' }: { class?: string } = $props();
 </script>
 
-<div class="animate-pulse rounded bg-slate-200 {className}" aria-hidden="true"></div>
+<UiSkeleton class={className} />

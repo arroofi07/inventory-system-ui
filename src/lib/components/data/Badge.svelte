@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { Badge as UiBadge } from '$lib/components/ui/badge/index.js';
+	import { cn } from '$lib/utils.js';
 	import { toneDariStatus, type BadgeTone } from './badge-tone';
 
 	interface Props {
@@ -15,23 +17,40 @@
 	let { label, tone, status, children }: Props = $props();
 
 	const resolved = $derived(tone ?? (status ? toneDariStatus(status) : 'netral'));
+
+	const badgeStyle = $derived.by(() => {
+		switch (resolved) {
+			case 'sukses':
+				return {
+					variant: 'outline' as const,
+					className: 'border-transparent bg-primary/15 text-primary'
+				};
+			case 'peringatan':
+				return {
+					variant: 'outline' as const,
+					className: 'border-transparent bg-amber-100 text-amber-800'
+				};
+			case 'bahaya':
+				return { variant: 'destructive' as const, className: '' };
+			case 'info':
+				return {
+					variant: 'outline' as const,
+					className: 'border-transparent bg-blue-100 text-blue-800'
+				};
+			case 'netral':
+				return { variant: 'outline' as const, className: '' };
+			default: {
+				const _exhaustive: never = resolved;
+				return _exhaustive;
+			}
+		}
+	});
 </script>
 
-<span
-	class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold tracking-wide {resolved ===
-	'sukses'
-		? 'bg-brand-100 text-brand-800'
-		: resolved === 'peringatan'
-			? 'bg-amber-100 text-amber-800'
-			: resolved === 'bahaya'
-				? 'bg-red-100 text-red-800'
-				: resolved === 'info'
-					? 'bg-blue-100 text-blue-800'
-					: 'bg-slate-100 text-slate-700'}"
->
+<UiBadge variant={badgeStyle.variant} class={cn(badgeStyle.className)}>
 	{#if children}
 		{@render children()}
 	{:else}
 		{label ?? status ?? ''}
 	{/if}
-</span>
+</UiBadge>

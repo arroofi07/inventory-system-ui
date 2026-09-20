@@ -6,6 +6,9 @@
 	import { resolveAppPath } from '$lib/nav';
 	import { ApiError } from '$lib/api/http';
 	import Skeleton from '$lib/components/feedback/Skeleton.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import { cn } from '$lib/utils.js';
 
 	let data = $state<Dashboard | null>(null);
 	let loading = $state(true);
@@ -68,7 +71,12 @@
 			out.push({ label: 'SKU stok rendah', value: String(k.sku_stok_rendah), href: '/laporan-stok' });
 		}
 		if (k.sku_stok_habis != null) {
-			out.push({ label: 'SKU stok habis', value: String(k.sku_stok_habis), href: '/laporan-stok', accent: true });
+			out.push({
+				label: 'SKU stok habis',
+				value: String(k.sku_stok_habis),
+				href: '/laporan-stok',
+				accent: true
+			});
 		}
 		if (k.batch_mendekati_exp != null) {
 			out.push({ label: 'Batch mendekati exp', value: String(k.batch_mendekati_exp) });
@@ -90,92 +98,113 @@
 	{:else if data}
 		{#if data.notifikasi_piutang}
 			<p class="text-sm">
-				<a class="text-brand-700 underline" href={resolveAppPath('/piutang/overdue')}>
+				<Button variant="link" class="h-auto p-0" href={resolveAppPath('/piutang/overdue')}>
 					Piutang: {data.notifikasi_piutang.overdue} overdue ·
 					{data.notifikasi_piutang.mendekati_jatuh_tempo} mendekati JT
-				</a>
+				</Button>
 			</p>
 		{/if}
 
 		<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 			{#each kartuList as k (k.label)}
 				{#if k.href}
-					<a
+					<Button
+						variant="outline"
 						href={resolveAppPath(k.href)}
-						class="rounded border px-3 py-3 {k.accent
-							? 'border-red-200 bg-red-50'
-							: 'border-slate-200 bg-white'} hover:border-brand-300"
+						class={cn(
+							'h-auto w-full flex-col items-start justify-start gap-0 rounded-[var(--radius-card)] border p-3 shadow-none ring-0 hover:border-brand-300',
+							k.accent
+								? 'border-red-200 bg-red-50 hover:bg-red-50'
+								: 'border-primary/20 bg-white'
+						)}
 					>
-						<p class="text-xs text-slate-500">{k.label}</p>
-						<p class="mt-1 text-lg font-semibold tabular-nums">{k.value}</p>
-					</a>
+						<p class="text-xs font-normal text-primary/70">{k.label}</p>
+						<p class="mt-1 text-lg font-semibold tabular-nums text-ink">{k.value}</p>
+					</Button>
 				{:else}
-					<div
-						class="rounded border px-3 py-3 {k.accent
-							? 'border-red-200 bg-red-50'
-							: 'border-slate-200 bg-white'}"
+					<Card.Root
+						class={cn(
+							'gap-0 border p-3 shadow-none ring-0',
+							k.accent ? 'border-red-200 bg-red-50' : 'border-primary/20 bg-white'
+						)}
 					>
-						<p class="text-xs text-slate-500">{k.label}</p>
+						<p class="text-xs text-primary/70">{k.label}</p>
 						<p class="mt-1 text-lg font-semibold tabular-nums">{k.value}</p>
-					</div>
+					</Card.Root>
 				{/if}
 			{/each}
 		</div>
 
 		<div class="grid gap-4 lg:grid-cols-3">
-			<section class="rounded border border-slate-200 bg-white p-3">
-				<h2 class="font-display text-base text-ink">Pending</h2>
-				{#if data.aktivitas_terkini.transaksi_pending.length === 0}
-					<p class="mt-2 text-sm text-muted">Tidak ada.</p>
-				{:else}
-					<ul class="mt-2 divide-y divide-slate-100 text-sm">
-						{#each data.aktivitas_terkini.transaksi_pending as a (a.id)}
-							<li class="flex items-start justify-between gap-3 py-2">
-								<a class="min-w-0 flex-1 break-words text-brand-700 underline" href={resolveAppPath(`/approval/${a.id}`)}
-									>{a.judul}</a
-								>
-								{#if a.nominal}
-									<span class="shrink-0 tabular-nums">{formatRupiah(a.nominal)}</span>
-								{/if}
-							</li>
-						{/each}
-					</ul>
-				{/if}
-			</section>
+			<Card.Root class="gap-0 border border-primary/20 p-3 shadow-none ring-0">
+				<Card.Header class="p-0">
+					<Card.Title class="font-display text-base text-ink">Pending</Card.Title>
+				</Card.Header>
+				<Card.Content class="p-0">
+					{#if data.aktivitas_terkini.transaksi_pending.length === 0}
+						<p class="mt-2 text-sm text-muted">Tidak ada.</p>
+					{:else}
+						<ul class="mt-2 divide-y divide-primary/10 text-sm">
+							{#each data.aktivitas_terkini.transaksi_pending as a (a.id)}
+								<li class="flex items-start justify-between gap-3 py-2">
+									<Button
+										variant="link"
+										class="h-auto min-w-0 flex-1 justify-start break-words p-0 text-left whitespace-normal"
+										href={resolveAppPath(`/approval/${a.id}`)}
+									>
+										{a.judul}
+									</Button>
+									{#if a.nominal}
+										<span class="shrink-0 tabular-nums">{formatRupiah(a.nominal)}</span>
+									{/if}
+								</li>
+							{/each}
+						</ul>
+					{/if}
+				</Card.Content>
+			</Card.Root>
 
-			<section class="rounded border border-slate-200 bg-white p-3">
-				<h2 class="font-display text-base text-ink">Barang masuk</h2>
-				{#if data.aktivitas_terkini.barang_masuk.length === 0}
-					<p class="mt-2 text-sm text-muted">Tidak ada.</p>
-				{:else}
-					<ul class="mt-2 divide-y divide-slate-100 text-sm">
-						{#each data.aktivitas_terkini.barang_masuk as a (a.id)}
-							<li class="py-2">
-								<p>{a.judul}</p>
-								<p class="text-xs text-muted">{a.subjudul}</p>
-							</li>
-						{/each}
-					</ul>
-				{/if}
-			</section>
+			<Card.Root class="gap-0 border border-primary/20 p-3 shadow-none ring-0">
+				<Card.Header class="p-0">
+					<Card.Title class="font-display text-base text-ink">Barang masuk</Card.Title>
+				</Card.Header>
+				<Card.Content class="p-0">
+					{#if data.aktivitas_terkini.barang_masuk.length === 0}
+						<p class="mt-2 text-sm text-muted">Tidak ada.</p>
+					{:else}
+						<ul class="mt-2 divide-y divide-primary/10 text-sm">
+							{#each data.aktivitas_terkini.barang_masuk as a (a.id)}
+								<li class="py-2">
+									<p>{a.judul}</p>
+									<p class="text-xs text-muted">{a.subjudul}</p>
+								</li>
+							{/each}
+						</ul>
+					{/if}
+				</Card.Content>
+			</Card.Root>
 
-			<section class="rounded border border-slate-200 bg-white p-3">
-				<h2 class="font-display text-base text-ink">Pembayaran terkini</h2>
-				{#if data.aktivitas_terkini.pembayaran.length === 0}
-					<p class="mt-2 text-sm text-muted">Tidak ada / tidak ditampilkan untuk role ini.</p>
-				{:else}
-					<ul class="mt-2 divide-y divide-slate-100 text-sm">
-						{#each data.aktivitas_terkini.pembayaran as a (a.id)}
-							<li class="py-2">
-								<p>{a.judul}</p>
-								{#if a.nominal}
-									<p class="tabular-nums text-xs">{formatRupiah(a.nominal)}</p>
-								{/if}
-							</li>
-						{/each}
-					</ul>
-				{/if}
-			</section>
+			<Card.Root class="gap-0 border border-primary/20 p-3 shadow-none ring-0">
+				<Card.Header class="p-0">
+					<Card.Title class="font-display text-base text-ink">Pembayaran terkini</Card.Title>
+				</Card.Header>
+				<Card.Content class="p-0">
+					{#if data.aktivitas_terkini.pembayaran.length === 0}
+						<p class="mt-2 text-sm text-muted">Tidak ada / tidak ditampilkan untuk role ini.</p>
+					{:else}
+						<ul class="mt-2 divide-y divide-primary/10 text-sm">
+							{#each data.aktivitas_terkini.pembayaran as a (a.id)}
+								<li class="py-2">
+									<p>{a.judul}</p>
+									{#if a.nominal}
+										<p class="tabular-nums text-xs">{formatRupiah(a.nominal)}</p>
+									{/if}
+								</li>
+							{/each}
+						</ul>
+					{/if}
+				</Card.Content>
+			</Card.Root>
 		</div>
 	{/if}
 </div>

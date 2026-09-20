@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import FakturDokumen from '$lib/components/faktur/FakturDokumen.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { ambilFaktur, unduhFakturPdf, type Faktur, type FakturItem } from '$lib/api/faktur';
 	import { ApiError } from '$lib/api/http';
 	import { auth } from '$lib/stores/auth.svelte';
@@ -97,52 +98,43 @@
 		<p class="text-sm text-muted">
 			Faktur sudah pernah dicetak. Hanya super admin yang dapat mencetak ulang.
 		</p>
-		<a class="text-sm text-brand-700 underline" href={resolveAppPath(`/transaksi/${id}`)}
-			>Kembali ke transaksi</a
-		>
-		{#if auth.punyaIzin('faktur.cetak_ulang')}
-			<button
-				type="button"
-				class="ml-3 text-sm text-brand-700 underline disabled:opacity-60"
-				onclick={() => void unduhPdf()}
-				disabled={mengunduh}
-			>
-				Unduh PDF (cetak ulang)
-			</button>
-		{/if}
+		<div class="flex flex-wrap items-center gap-2">
+			<Button variant="link" class="h-auto p-0" href={resolveAppPath(`/transaksi/${id}`)}>
+				Kembali ke transaksi
+			</Button>
+			{#if auth.punyaIzin('faktur.cetak_ulang')}
+				<Button
+					variant="link"
+					class="h-auto p-0"
+					type="button"
+					onclick={() => void unduhPdf()}
+					disabled={mengunduh}
+				>
+					Unduh PDF (cetak ulang)
+				</Button>
+			{/if}
+		</div>
 	</div>
 {:else if pesan}
 	<div class="mx-auto max-w-lg space-y-3 p-6">
 		<h1 class="font-display text-2xl text-ink">Tidak dapat mencetak</h1>
 		<p class="text-sm text-bahaya">{pesan}</p>
-		<a class="text-sm text-brand-700 underline" href={resolveAppPath(`/transaksi/${id}`)}
-			>Kembali</a
-		>
-		<a class="ml-3 text-sm text-brand-700 underline" href={resolveAppPath('/login')}>Login</a>
+		<div class="flex flex-wrap items-center gap-2">
+			<Button variant="link" class="h-auto p-0" href={resolveAppPath(`/transaksi/${id}`)}>
+				Kembali
+			</Button>
+			<Button variant="link" class="h-auto p-0" href={resolveAppPath('/login')}>Login</Button>
+		</div>
 	</div>
 {:else if faktur}
 	<div
-		class="tanpa-cetak flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3"
+		class="tanpa-cetak flex flex-wrap items-center gap-2 border-b border-primary/20 bg-primary/5 px-4 py-3"
 	>
-		<button
-			type="button"
-			class="rounded bg-slate-900 px-4 py-2 text-sm text-white"
-			onclick={() => window.print()}
-		>
-			Cetak
-		</button>
-		<button
-			type="button"
-			class="rounded border border-slate-300 bg-white px-4 py-2 text-sm disabled:opacity-60"
-			onclick={() => void unduhPdf()}
-			disabled={mengunduh}
-		>
+		<Button type="button" onclick={() => window.print()}>Cetak</Button>
+		<Button variant="outline" type="button" onclick={() => void unduhPdf()} disabled={mengunduh}>
 			{mengunduh ? 'Mengunduh…' : 'Unduh PDF'}
-		</button>
-		<a
-			class="rounded border border-slate-300 px-4 py-2 text-sm"
-			href={resolveAppPath(`/transaksi/${id}`)}>Kembali</a
-		>
+		</Button>
+		<Button variant="outline" href={resolveAppPath(`/transaksi/${id}`)}>Kembali</Button>
 		{#if faktur.cetak_ulang}
 			<span
 				class="ml-auto rounded border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm text-amber-900"
@@ -150,7 +142,7 @@
 				Faktur ini sudah pernah dicetak sebelumnya
 			</span>
 		{:else}
-			<span class="ml-auto text-xs text-slate-500">
+			<span class="ml-auto text-xs text-primary/70">
 				Peringatan: membuka halaman ini mengunci dokumen (sekali, kecuali super admin).
 			</span>
 		{/if}

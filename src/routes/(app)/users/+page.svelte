@@ -5,6 +5,9 @@
 	import FilterBar from '$lib/components/data/FilterBar.svelte';
 	import Field from '$lib/components/form/Field.svelte';
 	import Combobox from '$lib/components/form/Combobox.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { daftarUsers, type User } from '$lib/api/users';
 	import type { PageMeta } from '$lib/api/barang';
 	import { auth } from '$lib/stores/auth.svelte';
@@ -82,6 +85,11 @@
 		tampilNonaktif = false;
 		page = 1;
 	}
+
+	function onTampilNonaktifChange(v: boolean | 'indeterminate') {
+		tampilNonaktif = v === true;
+		page = 1;
+	}
 </script>
 
 <div class="space-y-4">
@@ -95,20 +103,14 @@
 			</p>
 		</div>
 		{#if bisaKelola}
-			<a
-				href={resolveAppPath('/users/baru')}
-				class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800"
-			>
-				Tambah pengguna
-			</a>
+			<Button href={resolveAppPath('/users/baru')}>Tambah pengguna</Button>
 		{/if}
 	</header>
 
 	<FilterBar onreset={resetFilter}>
 		<Field label="Cari" forId="user-q">
-			<input
+			<Input
 				id="user-q"
-				class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				placeholder="Nama / email / HP"
 				bind:value={q}
 				oninput={() => {
@@ -127,7 +129,7 @@
 			/>
 		</Field>
 		<label class="flex items-center gap-2 pb-2 text-sm text-ink">
-			<input type="checkbox" bind:checked={tampilNonaktif} onchange={() => (page = 1)} />
+			<Checkbox checked={tampilNonaktif} onCheckedChange={onTampilNonaktifChange} />
 			Sertakan nonaktif
 		</label>
 	</FilterBar>

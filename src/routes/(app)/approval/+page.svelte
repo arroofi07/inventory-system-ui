@@ -6,6 +6,10 @@
 	import Modal from '$lib/components/feedback/Modal.svelte';
 	import Skeleton from '$lib/components/feedback/Skeleton.svelte';
 	import EmptyState from '$lib/components/data/EmptyState.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
+	import * as Table from '$lib/components/ui/table/index.js';
 	import {
 		daftarTransaksi,
 		bulkApproveTransaksi,
@@ -109,10 +113,18 @@
 		selected = next;
 	}
 
+	function onSelectAllChange(v: boolean | 'indeterminate') {
+		toggleSemua(v === true);
+	}
+
+	function onRowSelectChange(id: number, v: boolean | 'indeterminate') {
+		selected = { ...selected, [id]: v === true };
+	}
+
 	function labelStok(r: TransaksiListItem): { text: string; className: string } {
 		if (r.stok_cukup === true) return { text: 'Cukup', className: 'bg-emerald-100 text-emerald-800' };
 		if (r.stok_cukup === false) return { text: 'Kurang', className: 'bg-red-100 text-red-800' };
-		return { text: '—', className: 'bg-slate-100 text-slate-600' };
+		return { text: '—', className: 'bg-primary/10 text-muted-foreground' };
 	}
 
 	async function jalankanBulk() {
@@ -161,34 +173,26 @@
 		</div>
 		<div class="flex flex-wrap gap-2">
 			{#if bisaEkspor}
-				<button
-					type="button"
-					class="rounded border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800"
-					onclick={() => void unduhEksporApproved()}
-				>
+				<Button variant="outline" onclick={() => void unduhEksporApproved()}>
 					Ekspor penjualan
-				</button>
+				</Button>
 			{/if}
 			{#if bisaAksi}
-				<button
-					type="button"
-					class="rounded bg-slate-900 px-4 py-2 text-sm text-white disabled:opacity-50"
+				<Button
 					disabled={idsDipilih.length === 0 || menyimpanBulk}
 					onclick={() => void jalankanBulk()}
 				>
-					{menyimpanBulk
-						? 'Memproses…'
-						: `Setujui terpilih (${idsDipilih.length})`}
-				</button>
+					{menyimpanBulk ? 'Memproses…' : `Setujui terpilih (${idsDipilih.length})`}
+				</Button>
 			{/if}
 		</div>
 	</header>
 
 	<FilterBar onreset={resetFilter}>
 		<Field label="Cari" forId="ap-q">
-			<input
+			<Input
 				id="ap-q"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+				class="w-full"
 				placeholder="Kode/nama pelanggan, ID, no…"
 				bind:value={q}
 			/>
@@ -200,119 +204,99 @@
 			<Combobox id="ap-ks" options={kecukupanOpts} bind:value={kecukupanStok} />
 		</Field>
 		<Field label="Dari tanggal" forId="ap-df">
-			<input
-				id="ap-df"
-				type="date"
-				class="w-full rounded-lg border px-3 py-2 text-sm"
-				bind:value={dateFrom}
-			/>
+			<Input id="ap-df" type="date" class="w-full" bind:value={dateFrom} />
 		</Field>
 		<Field label="Sampai" forId="ap-dt">
-			<input
-				id="ap-dt"
-				type="date"
-				class="w-full rounded-lg border px-3 py-2 text-sm"
-				bind:value={dateTo}
-			/>
+			<Input id="ap-dt" type="date" class="w-full" bind:value={dateTo} />
 		</Field>
 	</FilterBar>
 
-	<div class="overflow-hidden rounded-[var(--radius-card)] border border-slate-200 bg-white">
-		<div class="overflow-x-auto">
-			<table class="min-w-full text-sm">
-				<thead class="bg-surface text-left text-xs font-semibold uppercase tracking-wide text-muted">
-					<tr>
-						{#if bisaAksi}
-							<th class="px-3 py-2.5">
-								<input
-									type="checkbox"
-									aria-label="Pilih semua"
-									checked={semuaDipilih}
-									onchange={(e) =>
-										toggleSemua((e.currentTarget as HTMLInputElement).checked)}
-								/>
-							</th>
-						{/if}
-						<th class="px-3 py-2.5">ID</th>
-						<th class="px-3 py-2.5">Tanggal</th>
-						<th class="px-3 py-2.5">Pelanggan</th>
-						<th class="px-3 py-2.5">Bayar</th>
-						<th class="px-3 py-2.5">Stok</th>
-						<th class="px-3 py-2.5">Qty</th>
-						<th class="px-3 py-2.5 text-right">Total akhir</th>
-					</tr>
-				</thead>
-				<tbody class="divide-y divide-slate-100">
-					{#if loading}
-						{#each Array(5) as _, i (i)}
-							<tr>
-								{#each Array(bisaAksi ? 8 : 7) as __, j (j)}
-									<td class="px-3 py-3"><Skeleton class="h-4 w-full" /></td>
-								{/each}
-							</tr>
-						{/each}
-					{:else if rows.length === 0}
-						<tr>
-							<td colspan={bisaAksi ? 8 : 7} class="p-0">
-								<EmptyState
-									title="Antrian kosong"
-									description="Tidak ada transaksi pending sesuai filter."
-								/>
-							</td>
-						</tr>
-					{:else}
-						{#each rows as r (r.id)}
-							{@const stok = labelStok(r)}
-							<tr
-								class="cursor-pointer hover:bg-brand-50/60"
-								onclick={() => void pergiKe(`/approval/${r.id}`)}
-								onkeydown={(e) => {
-									if (e.key === 'Enter' || e.key === ' ') {
-										e.preventDefault();
-										void pergiKe(`/approval/${r.id}`);
-									}
-								}}
-								tabindex="0"
-								role="button"
-							>
-								{#if bisaAksi}
-									<td class="px-3 py-2.5" onclick={(e) => e.stopPropagation()}>
-										<input
-											type="checkbox"
-											aria-label={`Pilih transaksi ${r.id}`}
-											checked={Boolean(selected[r.id])}
-											onchange={(e) => {
-												selected = {
-													...selected,
-													[r.id]: (e.currentTarget as HTMLInputElement).checked
-												};
-											}}
-										/>
-									</td>
-								{/if}
-								<td class="px-3 py-2.5 text-ink">{r.id}</td>
-								<td class="px-3 py-2.5 text-ink">{r.tanggal}</td>
-								<td class="px-3 py-2.5 text-ink">
-									{r.kode_pelanggan} — {r.nama_pelanggan}
-								</td>
-								<td class="px-3 py-2.5 text-ink">{r.status_pembayaran}</td>
-								<td class="px-3 py-2.5">
-									<span class="rounded px-2 py-0.5 text-xs font-medium {stok.className}"
-										>{stok.text}</span
-									>
-								</td>
-								<td class="px-3 py-2.5 text-ink"
-									>{r.total_qty_ditagih}/{r.total_qty_keluar}</td
-								>
-								<td class="px-3 py-2.5 text-right tabular-nums text-ink"
-									>{formatRupiah(r.total_akhir)}</td
-								>
-							</tr>
-						{/each}
+	<div class="overflow-hidden rounded-[var(--radius-card)] border border-primary/20 bg-white">
+		<Table.Root>
+			<Table.Header>
+				<Table.Row class="hover:bg-transparent">
+					{#if bisaAksi}
+						<Table.Head class="px-3 py-2.5">
+							<Checkbox
+								aria-label="Pilih semua"
+								checked={semuaDipilih}
+								onCheckedChange={onSelectAllChange}
+							/>
+						</Table.Head>
 					{/if}
-				</tbody>
-			</table>
-		</div>
+					<Table.Head class="px-3 py-2.5">ID</Table.Head>
+					<Table.Head class="px-3 py-2.5">Tanggal</Table.Head>
+					<Table.Head class="px-3 py-2.5">Pelanggan</Table.Head>
+					<Table.Head class="px-3 py-2.5">Bayar</Table.Head>
+					<Table.Head class="px-3 py-2.5">Stok</Table.Head>
+					<Table.Head class="px-3 py-2.5">Qty</Table.Head>
+					<Table.Head class="px-3 py-2.5 text-right">Total akhir</Table.Head>
+				</Table.Row>
+			</Table.Header>
+			<Table.Body>
+				{#if loading}
+					{#each Array(5) as _, i (i)}
+						<Table.Row>
+							{#each Array(bisaAksi ? 8 : 7) as __, j (j)}
+								<Table.Cell class="px-3 py-3"><Skeleton class="h-4 w-full" /></Table.Cell>
+							{/each}
+						</Table.Row>
+					{/each}
+				{:else if rows.length === 0}
+					<Table.Row class="hover:bg-transparent">
+						<Table.Cell colspan={bisaAksi ? 8 : 7} class="whitespace-normal p-0">
+							<EmptyState
+								title="Antrian kosong"
+								description="Tidak ada transaksi pending sesuai filter."
+							/>
+						</Table.Cell>
+					</Table.Row>
+				{:else}
+					{#each rows as r (r.id)}
+						{@const stok = labelStok(r)}
+						<Table.Row
+							class="cursor-pointer hover:bg-brand-50/60"
+							onclick={() => void pergiKe(`/approval/${r.id}`)}
+							onkeydown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
+									void pergiKe(`/approval/${r.id}`);
+								}
+							}}
+							tabindex={0}
+							role="button"
+						>
+							{#if bisaAksi}
+								<Table.Cell class="px-3 py-2.5" onclick={(e) => e.stopPropagation()}>
+									<Checkbox
+										aria-label={`Pilih transaksi ${r.id}`}
+										checked={Boolean(selected[r.id])}
+										onCheckedChange={(v) => onRowSelectChange(r.id, v)}
+									/>
+								</Table.Cell>
+							{/if}
+							<Table.Cell class="px-3 py-2.5 text-ink">{r.id}</Table.Cell>
+							<Table.Cell class="px-3 py-2.5 text-ink">{r.tanggal}</Table.Cell>
+							<Table.Cell class="px-3 py-2.5 text-ink">
+								{r.kode_pelanggan} — {r.nama_pelanggan}
+							</Table.Cell>
+							<Table.Cell class="px-3 py-2.5 text-ink">{r.status_pembayaran}</Table.Cell>
+							<Table.Cell class="px-3 py-2.5">
+								<span class="rounded px-2 py-0.5 text-xs font-medium {stok.className}"
+									>{stok.text}</span
+								>
+							</Table.Cell>
+							<Table.Cell class="px-3 py-2.5 text-ink"
+								>{r.total_qty_ditagih}/{r.total_qty_keluar}</Table.Cell
+							>
+							<Table.Cell class="px-3 py-2.5 text-right tabular-nums text-ink"
+								>{formatRupiah(r.total_akhir)}</Table.Cell
+							>
+						</Table.Row>
+					{/each}
+				{/if}
+			</Table.Body>
+		</Table.Root>
 	</div>
 
 	<Pagination
@@ -346,7 +330,7 @@
 					<li>
 						Transaksi #{g.id}: {g.message ?? 'Gagal'}
 						{#if g.details?.length}
-							<ul class="ml-4 mt-1 text-slate-600">
+							<ul class="ml-4 mt-1 text-muted-foreground">
 								{#each g.details as d (d.kode_item)}
 									<li>{d.nama_item}: diminta {d.diminta}, tersedia {d.tersedia}</li>
 								{/each}
@@ -358,10 +342,6 @@
 		{/if}
 	{/if}
 	{#snippet footer()}
-		<button
-			type="button"
-			class="rounded border border-slate-200 px-3 py-1.5 text-sm"
-			onclick={() => (hasilOpen = false)}>Tutup</button
-		>
+		<Button variant="outline" onclick={() => (hasilOpen = false)}>Tutup</Button>
 	{/snippet}
 </Modal>

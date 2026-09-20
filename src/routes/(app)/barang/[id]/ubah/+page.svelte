@@ -4,6 +4,9 @@
 	import NumberInput from '$lib/components/form/NumberInput.svelte';
 	import BarangForm from '$lib/components/barang/BarangForm.svelte';
 	import HargaPenerimaan from '$lib/components/barang-masuk/HargaPenerimaan.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
 	import { daftarBatch, detailBarang, ubahBarang, type BatchListItem } from '$lib/api/barang';
 	import { detailBarangMasuk, ubahBarangMasuk } from '$lib/api/barang-masuk';
 	import { ApiError } from '$lib/api/http';
@@ -43,6 +46,17 @@
 	const id = $derived(Number(page.params.id));
 	const bisaUbahPenerimaan = $derived(auth.punyaIzin('barang_masuk.ubah'));
 	const agingBulan = $derived(hitungAgingMonth(tanggalMasuk, exp));
+
+	const batchSelectOptions = $derived(
+		batches.map((b) => ({
+			value: String(b.barang_masuk_id),
+			label: `${b.no_batch} · faktur ${b.no_faktur} · sisa ${b.qty_tersedia}`
+		}))
+	);
+	const batchSelectValue = $derived(batchId != null ? String(batchId) : '');
+	const batchSelectLabel = $derived(
+		batchSelectOptions.find((o) => o.value === batchSelectValue)?.label ?? 'Pilih…'
+	);
 
 	function isiDariBatch(b: BatchListItem) {
 		batchId = b.barang_masuk_id;
@@ -178,9 +192,9 @@
 </script>
 
 <div class="space-y-4">
-	<a href={resolveAppPath(`/barang/${id}`)} class="text-sm text-brand-700 underline"
-		>← Kembali ke detail</a
-	>
+	<Button variant="link" class="h-auto p-0" href={resolveAppPath(`/barang/${id}`)}>
+		← Kembali ke detail
+	</Button>
 	<header>
 		<h1 class="font-display text-2xl text-ink">Ubah barang</h1>
 		<p class="text-sm text-muted">
@@ -216,80 +230,56 @@
 			/>
 
 			{#if bisaUbahPenerimaan && batches.length}
-				<section class="space-y-4 border-t border-slate-200 pt-4">
+				<section class="space-y-4 border-t border-primary/20 pt-4">
 					<h2 class="font-display text-lg text-ink">Penerimaan & harga</h2>
 
 					{#if batches.length > 1}
 						<Field label="Batch yang diubah" forId="pilih-batch">
-							<select
-								id="pilih-batch"
-								class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-								value={batchId ?? ''}
-								onchange={(e) => void pilihBatch((e.currentTarget as HTMLSelectElement).value)}
+							<Select.Root
+								type="single"
+								value={batchSelectValue}
+								onValueChange={(v) => void pilihBatch(v)}
 								disabled={menyimpan}
 							>
-								{#each batches as b (b.barang_masuk_id)}
-									<option value={b.barang_masuk_id}>
-										{b.no_batch} · faktur {b.no_faktur} · sisa {b.qty_tersedia}
-									</option>
-								{/each}
-							</select>
+								<Select.Trigger id="pilih-batch" class="w-full">
+									{batchSelectLabel}
+								</Select.Trigger>
+								<Select.Content>
+									{#each batchSelectOptions as opsi (opsi.value)}
+										<Select.Item value={opsi.value} label={opsi.label}>{opsi.label}</Select.Item>
+									{/each}
+								</Select.Content>
+							</Select.Root>
 						</Field>
 					{/if}
 
 					<div class="grid gap-3 sm:grid-cols-2">
 						<Field label="No. faktur" required forId="faktur" error={errors.no_faktur}>
-							<input
-								id="faktur"
-								class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-								bind:value={noFaktur}
-								required
-								disabled={menyimpan}
-							/>
+							<Input id="faktur" bind:value={noFaktur} required disabled={menyimpan} />
 						</Field>
 						<Field label="No. batch" required forId="batch" error={errors.no_batch}>
-							<input
-								id="batch"
-								class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-								bind:value={noBatch}
-								required
-								disabled={menyimpan}
-							/>
+							<Input id="batch" bind:value={noBatch} required disabled={menyimpan} />
 						</Field>
 					</div>
 
 					<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 						<Field label="Tanggal masuk" required forId="tgl">
-							<input
-								id="tgl"
-								type="date"
-								class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-								bind:value={tanggalMasuk}
-								required
-								disabled={menyimpan}
-							/>
+							<Input id="tgl" type="date" bind:value={tanggalMasuk} required disabled={menyimpan} />
 						</Field>
 						<Field label="Exp" required forId="exp" error={errors.exp}>
-							<input
-								id="exp"
-								type="date"
-								class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-								bind:value={exp}
-								required
-								disabled={menyimpan}
-							/>
+							<Input id="exp" type="date" bind:value={exp} required disabled={menyimpan} />
 						</Field>
 						<Field label="Qty" required forId="qty" error={errors.qty}>
 							<NumberInput id="qty" min={1} bind:value={qty} required disabled={menyimpan} />
 						</Field>
 						<Field label="Aging (bulan)" forId="aging" hint="Otomatis dari tanggal masuk ke exp">
-							<input
+							<Input
 								id="aging"
 								type="text"
 								readonly
-								class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm tabular-nums"
+								class="bg-primary/5 tabular-nums"
 								value={exp ? String(agingBulan) : '—'}
-								tabindex="-1"
+								tabindex={-1}
 							/>
 						</Field>
 					</div>
@@ -310,21 +300,20 @@
 			{:else if !batches.length}
 				<p class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
 					Belum ada penerimaan. Ubah hanya data master.
-					<a
+					<Button
+						variant="link"
+						class="h-auto p-0"
 						href={resolveAppPath(`/barang-masuk/baru?kode_barang=${encodeURIComponent(kodeBarang)}`)}
-						class="underline">Tambah stok</a
 					>
+						Tambah stok
+					</Button>
 					untuk isi batch & harga.
 				</p>
 			{/if}
 
-			<button
-				type="submit"
-				class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800 disabled:opacity-50"
-				disabled={menyimpan}
-			>
+			<Button type="submit" disabled={menyimpan}>
 				{menyimpan ? 'Menyimpan…' : 'Simpan perubahan'}
-			</button>
+			</Button>
 		</form>
 	{/if}
 </div>

@@ -1,6 +1,9 @@
 <script lang="ts">
 	import Field from '$lib/components/form/Field.svelte';
 	import Combobox from '$lib/components/form/Combobox.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { USER_FORM_ROLES, type UserCreateBody } from '$lib/api/users';
 
 	interface Props {
@@ -74,9 +77,8 @@
 
 <form class="grid max-w-xl gap-4" onsubmit={handleSubmit}>
 	<Field label="Nama" required forId="name" error={errors.name}>
-		<input
+		<Input
 			id="name"
-			class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 			bind:value={name}
 			disabled={disabled || menyimpan}
 			required
@@ -84,10 +86,9 @@
 		/>
 	</Field>
 	<Field label="Email" required forId="email" error={errors.email}>
-		<input
+		<Input
 			id="email"
 			type="email"
-			class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 			bind:value={email}
 			disabled={disabled || menyimpan}
 			required
@@ -100,10 +101,9 @@
 		forId="password"
 		error={errors.password}
 	>
-		<input
+		<Input
 			id="password"
 			type="password"
-			class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 			bind:value={password}
 			disabled={disabled || menyimpan}
 			required={mode === 'buat'}
@@ -118,28 +118,22 @@
 		</Field>
 	{:else}
 		<Field label="Role" forId="role-locked">
-			<input
-				id="role-locked"
-				class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm"
-				value={role}
-				disabled
-			/>
+			<Input id="role-locked" value={role} disabled />
 			<p class="mt-1 text-xs text-muted">Role admin/super_admin tidak diubah lewat form ini.</p>
 		</Field>
 	{/if}
 	<Field label="No. HP" forId="hp" error={errors.no_hp}>
-		<input
+		<Input
 			id="hp"
-			class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 			bind:value={noHp}
 			disabled={disabled || menyimpan}
 			maxlength={30}
 		/>
 	</Field>
 	<Field label="No. KTP" forId="ktp" error={errors.no_ktp}>
-		<input
+		<Input
 			id="ktp"
-			class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
+			class="font-mono"
 			bind:value={noKtp}
 			disabled={disabled || menyimpan}
 			maxlength={32}
@@ -149,18 +143,14 @@
 		<Combobox id="jk" options={jkOpts} bind:value={jenisKelamin} disabled={disabled || menyimpan} />
 	</Field>
 	<Field label="Alamat" forId="alamat" error={errors.alamat}>
-		<textarea
+		<Textarea
 			id="alamat"
-			class="min-h-[72px] w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+			class="min-h-18"
 			bind:value={alamat}
 			disabled={disabled || menyimpan}
-		></textarea>
+		/>
 	</Field>
-	<button
-		type="submit"
-		class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-		disabled={disabled || menyimpan}
-	>
+	<Button type="submit" disabled={disabled || menyimpan}>
 		{menyimpan ? 'Menyimpan…' : mode === 'buat' ? 'Simpan pengguna' : 'Simpan perubahan'}
-	</button>
+	</Button>
 </form>

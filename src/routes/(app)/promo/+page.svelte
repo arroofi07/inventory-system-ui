@@ -5,6 +5,9 @@
 	import FilterBar from '$lib/components/data/FilterBar.svelte';
 	import Field from '$lib/components/form/Field.svelte';
 	import Combobox from '$lib/components/form/Combobox.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { TIPE_PROMO_OPTIONS, daftarPromo, type Promo } from '$lib/api/promo';
 	import type { PageMeta } from '$lib/api/barang';
 	import { auth } from '$lib/stores/auth.svelte';
@@ -88,6 +91,16 @@
 		tampilNonaktif = false;
 		page = 1;
 	}
+
+	function onHanyaAktifPeriodeChange(v: boolean | 'indeterminate') {
+		hanyaAktifPeriode = v === true;
+		page = 1;
+	}
+
+	function onTampilNonaktifChange(v: boolean | 'indeterminate') {
+		tampilNonaktif = v === true;
+		page = 1;
+	}
 </script>
 
 <div class="space-y-4">
@@ -99,20 +112,14 @@
 			</p>
 		</div>
 		{#if bisaKelola}
-			<a
-				href={resolveAppPath('/promo/baru')}
-				class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800"
-			>
-				Tambah promo
-			</a>
+			<Button href={resolveAppPath('/promo/baru')}>Tambah promo</Button>
 		{/if}
 	</header>
 
 	<FilterBar onreset={resetFilter}>
 		<Field label="Cari" forId="promo-q">
-			<input
+			<Input
 				id="promo-q"
-				class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				placeholder="Kode / nama"
 				bind:value={q}
 				oninput={() => {
@@ -131,12 +138,12 @@
 			/>
 		</Field>
 		<label class="flex items-center gap-2 pb-2 text-sm text-ink">
-			<input type="checkbox" bind:checked={hanyaAktifPeriode} onchange={() => (page = 1)} />
+			<Checkbox checked={hanyaAktifPeriode} onCheckedChange={onHanyaAktifPeriodeChange} />
 			Hanya aktif di periode hari ini
 		</label>
 		{#if !hanyaAktifPeriode}
 			<label class="flex items-center gap-2 pb-2 text-sm text-ink">
-				<input type="checkbox" bind:checked={tampilNonaktif} onchange={() => (page = 1)} />
+				<Checkbox checked={tampilNonaktif} onCheckedChange={onTampilNonaktifChange} />
 				Sertakan nonaktif
 			</label>
 		{/if}

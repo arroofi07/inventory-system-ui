@@ -2,8 +2,6 @@
 	let { children } = $props();
 </script>
 
-<div
-	class="h-dvh overflow-hidden bg-[var(--color-surface)] text-[var(--color-ink)] print:h-auto print:overflow-visible"
->
+<div class="bg-background text-foreground h-dvh overflow-hidden print:h-auto print:overflow-visible">
 	{@render children()}
 </div>

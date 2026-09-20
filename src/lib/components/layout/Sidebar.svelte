@@ -3,6 +3,10 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { filterNavigasi } from '$lib/components/layout/nav-items';
+	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
+	import { Separator } from '$lib/components/ui/separator/index.js';
+	import * as Sheet from '$lib/components/ui/sheet/index.js';
+	import { cn } from '$lib/utils.js';
 	import { auth } from '$lib/stores/auth.svelte';
 
 	let { open = $bindable(false) }: { open?: boolean } = $props();
@@ -12,49 +16,26 @@
 	afterNavigate(() => {
 		open = false;
 	});
-
-	function tutup() {
-		open = false;
-	}
-
-	function onKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape' && open) tutup();
-	}
 </script>
 
-<svelte:window onkeydown={onKeydown} />
-
-{#if open}
-	<button
-		type="button"
-		class="tanpa-cetak fixed inset-0 top-14 z-30 bg-ink/40 lg:hidden"
-		aria-label="Tutup menu"
-		onclick={tutup}
-	></button>
-{/if}
-
-<aside
-	id="app-sidebar"
-	class={[
-		'tanpa-cetak flex w-60 shrink-0 flex-col overflow-hidden border-r border-brand-100 bg-white',
-		'fixed top-14 bottom-0 left-0 z-40 shadow-xl transition-transform duration-200',
-		'lg:static lg:z-auto lg:h-full lg:shadow-none lg:translate-x-0',
-		open ? 'translate-x-0' : '-translate-x-full'
-	]}
->
-	<div class="border-b border-brand-100 px-4 py-4">
-		<p class="font-[family-name:var(--font-display)] text-lg font-bold tracking-tight text-brand-800">
+{#snippet brandHeader()}
+	<div class="px-4 py-4">
+		<p class="text-primary font-[family-name:var(--font-display)] text-lg font-bold tracking-tight">
 			PKB Web
 		</p>
 		{#if auth.user}
-			<p class="mt-0.5 truncate text-xs text-[var(--color-muted)]">{auth.user.role}</p>
+			<p class="text-muted-foreground mt-0.5 truncate text-xs">{auth.user.role}</p>
 		{/if}
 	</div>
+{/snippet}
 
-	<nav class="flex flex-1 flex-col gap-5 overflow-y-auto p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+{#snippet navLinks()}
+	<nav class="flex flex-1 flex-col gap-5 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
 		{#each grupTampil as grup (grup.label)}
 			<div>
-				<p class="mb-1.5 px-2 text-[0.65rem] font-semibold tracking-wider text-slate-400 uppercase">
+				<p
+					class="text-muted-foreground mb-1.5 px-2 text-[0.65rem] font-semibold tracking-wider uppercase"
+				>
 					{grup.label}
 				</p>
 				<ul class="space-y-0.5">
@@ -64,12 +45,12 @@
 						<li>
 							<a
 								href={resolve(...([item.href, {}] as unknown as Parameters<typeof resolve>))}
-								class={[
+								class={cn(
 									'block rounded-md px-2.5 py-2.5 text-sm transition-colors lg:py-1.5',
 									aktif
-										? 'bg-brand-50 font-semibold text-brand-800'
-										: 'text-slate-700 hover:bg-slate-50'
-								]}
+										? 'bg-primary/10 text-primary font-semibold'
+										: 'text-foreground/80 hover:bg-primary/8 hover:text-primary'
+								)}
 								aria-current={aktif ? 'page' : undefined}
 							>
 								{item.label}
@@ -80,4 +61,35 @@
 			</div>
 		{/each}
 	</nav>
+{/snippet}
+
+<aside
+	class="tanpa-cetak border-border bg-background hidden h-full w-60 shrink-0 flex-col overflow-hidden border-r lg:flex"
+>
+	{@render brandHeader()}
+	<Separator />
+	<ScrollArea class="min-h-0 flex-1">
+		{@render navLinks()}
+	</ScrollArea>
 </aside>
+
+<Sheet.Root bind:open>
+	<Sheet.Content
+		id="app-sidebar"
+		side="left"
+		showCloseButton={false}
+		class="tanpa-cetak w-60 gap-0 p-0 sm:max-w-60"
+	>
+		<Sheet.Header class="sr-only">
+			<Sheet.Title>Menu navigasi</Sheet.Title>
+			<Sheet.Description>Navigasi utama aplikasi</Sheet.Description>
+		</Sheet.Header>
+		<div class="flex h-full flex-col overflow-hidden">
+			{@render brandHeader()}
+			<Separator />
+			<ScrollArea class="min-h-0 flex-1">
+				{@render navLinks()}
+			</ScrollArea>
+		</div>
+	</Sheet.Content>
+</Sheet.Root>

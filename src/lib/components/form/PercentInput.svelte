@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { cn } from '$lib/utils.js';
 	import { isZeroNumeric } from '$lib/domain/format';
 
 	interface Props {
@@ -51,19 +53,20 @@
 	}
 </script>
 
-<div class={['relative inline-flex', className]}>
-	<input
+<div class={cn('relative inline-flex', className)}>
+	<Input
 		{id}
 		{disabled}
 		type="text"
 		inputmode="decimal"
-		class="w-full rounded-lg border border-slate-300 py-2 pl-2 pr-8 text-right font-mono text-sm tabular-nums focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
+		class="pr-8 text-right font-mono text-sm tabular-nums"
 		value={tampilan}
 		onfocus={onFocus}
 		oninput={onInput}
 		onblur={onBlur}
 	/>
-	<span class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-sm text-muted"
+	<span
+		class="pointer-events-none absolute top-1/2 right-2 z-10 -translate-y-1/2 text-sm text-primary/70"
 		>%</span
 	>
 </div>

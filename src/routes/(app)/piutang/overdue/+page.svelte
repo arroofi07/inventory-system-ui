@@ -1,10 +1,14 @@
 <script lang="ts">
 	import Pagination from '$lib/components/data/Pagination.svelte';
 	import FilterBar from '$lib/components/data/FilterBar.svelte';
+	import StatCard from '$lib/components/data/StatCard.svelte';
 	import Field from '$lib/components/form/Field.svelte';
 	import Skeleton from '$lib/components/feedback/Skeleton.svelte';
 	import EmptyState from '$lib/components/data/EmptyState.svelte';
 	import BayarModal from '$lib/components/piutang/BayarModal.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import * as Table from '$lib/components/ui/table/index.js';
 	import {
 		daftarPiutangOverdue,
 		type PiutangItem,
@@ -87,42 +91,28 @@
 			<h1 class="font-display text-2xl text-ink">Piutang overdue</h1>
 			<p class="text-sm text-muted">
 				Transaksi lewat jatuh tempo.
-				<a class="text-brand-700 underline" href={resolveAppPath('/piutang')}>← Semua piutang</a>
+				<Button variant="link" class="h-auto p-0" href={resolveAppPath('/piutang')}>
+					← Semua piutang
+				</Button>
 			</p>
 		</div>
-		<div class="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm">
-			<span class="text-red-700">Nilai overdue:</span>
-			<span class="ml-1 font-semibold tabular-nums text-red-900"
-				>{formatRupiah(ringkasan.piutang_overdue)}</span
-			>
-			<span class="ml-2 text-red-700">({ringkasan.jumlah_transaksi_overdue} trx)</span>
-		</div>
+		<StatCard
+			label="Nilai overdue"
+			value={formatRupiah(ringkasan.piutang_overdue)}
+			hint={`${ringkasan.jumlah_transaksi_overdue} trx`}
+			tone="bahaya"
+		/>
 	</header>
 
 	<FilterBar onreset={resetFilter}>
 		<Field label="Cari" forId="ov-q">
-			<input
-				id="ov-q"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-				placeholder="Kode/nama, no…"
-				bind:value={q}
-			/>
+			<Input id="ov-q" class="w-full" placeholder="Kode/nama, no…" bind:value={q} />
 		</Field>
 		<Field label="Dari" forId="ov-df">
-			<input
-				id="ov-df"
-				type="date"
-				class="w-full rounded-lg border px-3 py-2 text-sm"
-				bind:value={dateFrom}
-			/>
+			<Input id="ov-df" type="date" class="w-full" bind:value={dateFrom} />
 		</Field>
 		<Field label="Sampai" forId="ov-ds">
-			<input
-				id="ov-ds"
-				type="date"
-				class="w-full rounded-lg border px-3 py-2 text-sm"
-				bind:value={dateTo}
-			/>
+			<Input id="ov-ds" type="date" class="w-full" bind:value={dateTo} />
 		</Field>
 	</FilterBar>
 
@@ -131,58 +121,63 @@
 	{:else if rows.length === 0}
 		<EmptyState title="Tidak ada overdue" description="Tidak ada piutang lewat jatuh tempo." />
 	{:else}
-		<div class="overflow-x-auto rounded border border-slate-200 bg-white">
-			<table class="min-w-full text-left text-sm">
-				<thead class="border-b bg-slate-50 text-xs uppercase text-slate-500">
-					<tr>
-						<th class="px-3 py-2">No / ID</th>
-						<th class="px-3 py-2">Pelanggan</th>
-						<th class="px-3 py-2">JT</th>
-						<th class="px-3 py-2 text-right">Sisa</th>
-						<th class="px-3 py-2">Terlambat</th>
-						<th class="px-3 py-2">Aksi</th>
-					</tr>
-				</thead>
-				<tbody>
+		<div class="overflow-hidden rounded-[var(--radius-card)] border border-primary/20 bg-white">
+			<Table.Root>
+				<Table.Header>
+					<Table.Row class="hover:bg-transparent">
+						<Table.Head class="px-3 py-2">No / ID</Table.Head>
+						<Table.Head class="px-3 py-2">Pelanggan</Table.Head>
+						<Table.Head class="px-3 py-2">JT</Table.Head>
+						<Table.Head class="px-3 py-2 text-right">Sisa</Table.Head>
+						<Table.Head class="px-3 py-2">Terlambat</Table.Head>
+						<Table.Head class="px-3 py-2">Aksi</Table.Head>
+					</Table.Row>
+				</Table.Header>
+				<Table.Body>
 					{#each rows as r (r.transaksi_id)}
-						<tr class="border-b border-slate-100">
-							<td class="px-3 py-2 tabular-nums">{r.no_transaksi ?? `#${r.transaksi_id}`}</td>
-							<td class="px-3 py-2">
-								<a
-									class="text-brand-700 underline"
+						<Table.Row>
+							<Table.Cell class="px-3 py-2 tabular-nums"
+								>{r.no_transaksi ?? `#${r.transaksi_id}`}</Table.Cell
+							>
+							<Table.Cell class="px-3 py-2">
+								<Button
+									variant="link"
+									class="h-auto p-0"
 									href={resolveAppPath(
 										`/piutang/pelanggan/${encodeURIComponent(r.kode_pelanggan)}`
 									)}
 								>
 									{r.kode_pelanggan}
-								</a>
+								</Button>
 								<div class="text-xs text-muted">{r.nama_pelanggan}</div>
-							</td>
-							<td class="px-3 py-2 whitespace-nowrap"
-								>{r.tanggal_jatuh_tempo?.slice(0, 10) ?? '—'}</td
+							</Table.Cell>
+							<Table.Cell class="px-3 py-2 whitespace-nowrap"
+								>{r.tanggal_jatuh_tempo?.slice(0, 10) ?? '—'}</Table.Cell
 							>
-							<td class="px-3 py-2 text-right tabular-nums">{formatRupiah(r.sisa_hutang)}</td>
-							<td class="px-3 py-2 text-red-700">+{r.hari_terlambat} hari</td>
-							<td class="px-3 py-2">
+							<Table.Cell class="px-3 py-2 text-right tabular-nums"
+								>{formatRupiah(r.sisa_hutang)}</Table.Cell
+							>
+							<Table.Cell class="px-3 py-2 text-red-700">+{r.hari_terlambat} hari</Table.Cell>
+							<Table.Cell class="px-3 py-2">
 								{#if bisaBayar}
-									<button
-										type="button"
-										class="text-sm text-brand-700 underline"
+									<Button
+										variant="link"
+										class="h-auto p-0"
 										onclick={() => {
 											bayarRow = r;
 											bayarOpen = true;
 										}}
 									>
 										Bayar
-									</button>
+									</Button>
 								{:else}
 									—
 								{/if}
-							</td>
-						</tr>
+							</Table.Cell>
+						</Table.Row>
 					{/each}
-				</tbody>
-			</table>
+				</Table.Body>
+			</Table.Root>
 		</div>
 		<Pagination
 			page={meta.page}

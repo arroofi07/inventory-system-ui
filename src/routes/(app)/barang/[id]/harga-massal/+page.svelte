@@ -3,6 +3,12 @@
 	import Field from '$lib/components/form/Field.svelte';
 	import CurrencyInput from '$lib/components/form/CurrencyInput.svelte';
 	import PercentInput from '$lib/components/form/PercentInput.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Table from '$lib/components/ui/table/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
 	import { daftarBatch, detailBarang, type BatchListItem, type Barang } from '$lib/api/barang';
 	import { hargaMassal } from '$lib/api/harga';
 	import { ApiError } from '$lib/api/http';
@@ -12,6 +18,11 @@
 	import { formatRupiah, parseRupiah } from '$lib/domain/format';
 	import { hitungHargaChannel, hitungHPP, type MarkupTipe } from '$lib/domain/pricing';
 	import { onMount, untrack } from 'svelte';
+
+	const MARKUP_TIPE_OPTIONS: { value: MarkupTipe; label: string }[] = [
+		{ value: 'percent', label: 'Persen dari harga list' },
+		{ value: 'value', label: 'Nominal rupiah' }
+	];
 
 	const id = $derived(Number(page.params.id));
 
@@ -220,18 +231,37 @@
 			menyimpan = false;
 		}
 	}
+
+	function onUbahHargaChange(v: boolean | 'indeterminate') {
+		ubahHarga = v === true;
+	}
+
+	function setMarkupMtType(v: string) {
+		markupMtType = v === 'value' ? 'value' : 'percent';
+	}
+
+	function setMarkupGtType(v: string) {
+		markupGtType = v === 'value' ? 'value' : 'percent';
+	}
+
+	const markupMtTriggerLabel = $derived(
+		MARKUP_TIPE_OPTIONS.find((o) => o.value === markupMtType)?.label ?? 'Pilih…'
+	);
+	const markupGtTriggerLabel = $derived(
+		MARKUP_TIPE_OPTIONS.find((o) => o.value === markupGtType)?.label ?? 'Pilih…'
+	);
 </script>
 
 <div class="space-y-4">
-	<a href={resolveAppPath(`/barang/${id}`)} class="text-sm text-brand-700 underline"
-		>← Kembali ke detail</a
-	>
+	<Button variant="link" class="h-auto p-0" href={resolveAppPath(`/barang/${id}`)}>
+		← Kembali ke detail
+	</Button>
 	<header class="space-y-1">
 		<h1 class="font-display text-2xl text-ink">Harga massal</h1>
 		<p class="text-sm text-muted">
 			{#if barang}{barang.kode_barang} — {barang.nama_item}{:else}…{/if}
 		</p>
-		<p class="max-w-2xl text-sm text-slate-600">
+		<p class="max-w-2xl text-sm text-muted-foreground">
 			Harga jual dihitung dari <strong>harga list</strong>, bukan dari HPP.
 			MT = list + markup MT, GT = list + markup GT. Diskon tiap batch tetap, dan hanya mengubah HPP.
 		</p>
@@ -249,11 +279,11 @@
 				void simpan();
 			}}
 		>
-			<section class="space-y-4 rounded-xl border border-slate-200 bg-white p-4">
-				<h2 class="text-sm font-semibold text-slate-800">Nilai yang diterapkan</h2>
+			<Card.Root class="gap-0 space-y-4 border p-4 shadow-none ring-0">
+				<h2 class="text-sm font-semibold text-foreground">Nilai yang diterapkan</h2>
 
-				<label class="flex items-start gap-2 text-sm text-slate-700">
-					<input type="checkbox" class="mt-1" bind:checked={ubahHarga} />
+				<label class="flex items-start gap-2 text-sm text-foreground">
+					<Checkbox class="mt-1" checked={ubahHarga} onCheckedChange={onUbahHargaChange} />
 					<span>Ganti harga list semua batch terpilih. Jika tidak dicentang, harga list tiap batch tetap.</span>
 				</label>
 				{#if ubahHarga}
@@ -263,7 +293,7 @@
 				{/if}
 
 				<div class="grid gap-3">
-					<p class="text-xs text-slate-500">
+					<p class="text-xs text-primary/70">
 						{#if batchAcuan}
 							Markup diisi dari batch <span class="font-mono">{batchAcuan.no_batch}</span>. Centang batch lain untuk mengganti, matikan centang untuk mengosongkan.
 						{:else}
@@ -271,15 +301,21 @@
 						{/if}
 					</p>
 					<Field label="Markup Modern Trade" forId="mt-type">
-						<select
-							id="mt-type"
-							class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-							bind:value={markupMtType}
+						<Select.Root
+							type="single"
+							value={markupMtType}
+							onValueChange={setMarkupMtType}
 							disabled={!batchAcuan}
 						>
-							<option value="percent">Persen dari harga list</option>
-							<option value="value">Nominal rupiah</option>
-						</select>
+							<Select.Trigger id="mt-type" class="w-full">
+								{markupMtTriggerLabel}
+							</Select.Trigger>
+							<Select.Content>
+								{#each MARKUP_TIPE_OPTIONS as opsi (opsi.value)}
+									<Select.Item value={opsi.value} label={opsi.label}>{opsi.label}</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
 					</Field>
 					{#key `${batchAcuanId ?? 'kosong'}-${markupMtType}`}
 						{#if markupMtType === 'percent'}
@@ -297,15 +333,21 @@
 					{@render rincianMarkup('MT', markupMtAmt, markupMtType)}
 
 					<Field label="Markup General Trade" forId="gt-type">
-						<select
-							id="gt-type"
-							class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-							bind:value={markupGtType}
+						<Select.Root
+							type="single"
+							value={markupGtType}
+							onValueChange={setMarkupGtType}
 							disabled={!batchAcuan}
 						>
-							<option value="percent">Persen dari harga list</option>
-							<option value="value">Nominal rupiah</option>
-						</select>
+							<Select.Trigger id="gt-type" class="w-full">
+								{markupGtTriggerLabel}
+							</Select.Trigger>
+							<Select.Content>
+								{#each MARKUP_TIPE_OPTIONS as opsi (opsi.value)}
+									<Select.Item value={opsi.value} label={opsi.label}>{opsi.label}</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
 					</Field>
 					{#key `${batchAcuanId ?? 'kosong'}-${markupGtType}`}
 						{#if markupGtType === 'percent'}
@@ -323,8 +365,8 @@
 					{@render rincianMarkup('GT', markupGtAmt, markupGtType)}
 				</div>
 
-				<div class="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
-					<p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+				<div class="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
+					<p class="text-xs font-semibold uppercase tracking-wide text-primary/70">
 						Harga jual batch terpilih
 					</p>
 					{#if batchTerpilih.length === 0}
@@ -333,9 +375,9 @@
 						<ul class="space-y-3">
 							{#each batchTerpilih as b (b.barang_masuk_id)}
 								{@const next = pratinjau(b)}
-								<li class="space-y-1.5 border-t border-slate-200 pt-2 first:border-0 first:pt-0">
-									<p class="font-mono text-xs text-slate-700">{b.no_batch}</p>
-									<p class="text-xs text-slate-500">Harga list {formatRupiah(next.list)}</p>
+								<li class="space-y-1.5 border-t border-primary/20 pt-2 first:border-0 first:pt-0">
+									<p class="font-mono text-xs text-foreground">{b.no_batch}</p>
+									<p class="text-xs text-primary/70">Harga list {formatRupiah(next.list)}</p>
 									<div class="grid grid-cols-2 gap-2">
 										<div class="rounded-md bg-violet-50 px-2 py-1.5">
 											<p class="text-[10px] font-bold uppercase text-violet-800">MT</p>
@@ -369,96 +411,91 @@
 				</div>
 
 				<Field label="Keterangan" forId="ket" hint="Tercatat di riwayat harga">
-					<input
-						id="ket"
-						class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-						bind:value={keterangan}
-						maxlength={500}
-					/>
+					<Input id="ket" bind:value={keterangan} maxlength={500} />
 				</Field>
 
-				<button
+				<Button
 					type="submit"
-					class="w-full rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800 disabled:opacity-50"
+					class="w-full"
 					disabled={menyimpan || idsDipilih.length === 0 || !batchAcuan}
 				>
 					{menyimpan ? 'Menyimpan…' : `Terapkan ke ${idsDipilih.length} batch`}
-				</button>
-			</section>
+				</Button>
+			</Card.Root>
 
-			<section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-				<div class="flex items-center justify-between gap-2 border-b border-slate-100 px-3 py-2">
-					<p class="text-sm font-medium text-slate-800">Pratinjau sebelum simpan</p>
-					<button
+			<Card.Root class="gap-0 overflow-hidden border py-0 shadow-none ring-0">
+				<div class="flex items-center justify-between gap-2 border-b border-primary/10 px-3 py-2">
+					<p class="text-sm font-medium text-foreground">Pratinjau sebelum simpan</p>
+					<Button
+						variant="link"
+						class="h-auto p-0 text-xs"
 						type="button"
-						class="text-xs text-brand-700 underline"
 						onclick={() => setSemua(!semuaDipilih)}
 					>
 						{semuaDipilih ? 'Kosongkan pilihan' : 'Pilih semua'}
-					</button>
+					</Button>
 				</div>
 				<div class="overflow-x-auto">
-					<table class="min-w-full text-sm">
-						<thead class="bg-surface text-xs uppercase text-muted">
-							<tr>
-								<th class="px-3 py-2 text-left">Pilih</th>
-								<th class="px-3 py-2 text-left">Batch</th>
-								<th class="px-3 py-2 text-right">Harga list</th>
-								<th class="px-3 py-2 text-right">Diskon</th>
-								<th class="px-3 py-2 text-right">MT</th>
-								<th class="px-3 py-2 text-right">GT</th>
-							</tr>
-						</thead>
-						<tbody class="divide-y divide-slate-100">
+					<Table.Root>
+						<Table.Header>
+							<Table.Row class="hover:bg-transparent">
+								<Table.Head class="px-3 py-2 text-left">Pilih</Table.Head>
+								<Table.Head class="px-3 py-2 text-left">Batch</Table.Head>
+								<Table.Head class="px-3 py-2 text-right">Harga list</Table.Head>
+								<Table.Head class="px-3 py-2 text-right">Diskon</Table.Head>
+								<Table.Head class="px-3 py-2 text-right">MT</Table.Head>
+								<Table.Head class="px-3 py-2 text-right">GT</Table.Head>
+							</Table.Row>
+						</Table.Header>
+						<Table.Body>
 							{#each batches as b (b.barang_masuk_id)}
 								{@const next = pratinjau(b)}
 								{@const aktif = selected[b.barang_masuk_id]}
-								<tr class={aktif ? '' : 'opacity-50'}>
-									<td class="px-3 py-2">
-										<input
-											type="checkbox"
+								<Table.Row class={aktif ? '' : 'opacity-50'}>
+									<Table.Cell class="px-3 py-2">
+										<Checkbox
 											checked={!!selected[b.barang_masuk_id]}
-											onchange={() => toggle(b.barang_masuk_id)}
+											onCheckedChange={() => toggle(b.barang_masuk_id)}
 										/>
-									</td>
-									<td class="px-3 py-2">
+									</Table.Cell>
+									<Table.Cell class="px-3 py-2">
 										<p class="font-mono text-xs">{b.no_batch}</p>
 										<p class="text-xs text-muted">sisa {b.qty_tersedia}</p>
-									</td>
-									<td class="px-3 py-2 text-right tabular-nums">
+									</Table.Cell>
+									<Table.Cell class="px-3 py-2 text-right tabular-nums">
 										<p class={beda(b.harga, next.list) && aktif ? 'font-medium text-brand-800' : ''}>
 											{formatRupiah(next.list)}
 										</p>
 										{#if beda(b.harga, next.list) && aktif}
 											<p class="text-xs text-muted line-through">{formatRupiah(b.harga)}</p>
 										{/if}
-									</td>
-									<td class="px-3 py-2 text-right text-xs tabular-nums text-slate-600">
+									</Table.Cell>
+									<Table.Cell class="px-3 py-2 text-right text-xs tabular-nums text-muted-foreground">
 										{angka(b.disc_hpp_1, '0')}% / {angka(b.disc_hpp_2, '0')}% / {angka(b.disc_hpp_3, '0')}%
 										<p class="text-muted">HPP {formatRupiah(next.hpp)}</p>
-									</td>
-									<td class="px-3 py-2 text-right tabular-nums">
+									</Table.Cell>
+									<Table.Cell class="px-3 py-2 text-right tabular-nums">
 										<p class={beda(b.harga_mt, next.mt) && aktif ? 'font-medium text-brand-800' : ''}>
 											{formatRupiah(next.mt)}
 										</p>
 										{#if beda(b.harga_mt, next.mt) && aktif}
 											<p class="text-xs text-muted">dari {formatRupiah(b.harga_mt)}</p>
 										{/if}
-									</td>
-									<td class="px-3 py-2 text-right tabular-nums">
+									</Table.Cell>
+									<Table.Cell class="px-3 py-2 text-right tabular-nums">
 										<p class={beda(b.harga_gt, next.gt) && aktif ? 'font-medium text-brand-800' : ''}>
 											{formatRupiah(next.gt)}
 										</p>
 										{#if beda(b.harga_gt, next.gt) && aktif}
 											<p class="text-xs text-muted">dari {formatRupiah(b.harga_gt)}</p>
 										{/if}
-									</td>
-								</tr>
+									</Table.Cell>
+								</Table.Row>
 							{/each}
-						</tbody>
-					</table>
+						</Table.Body>
+					</Table.Root>
 				</div>
-			</section>
+			</Card.Root>
 		</form>
 	{/if}
 </div>
@@ -471,7 +508,7 @@
 			{#each batchTerpilih as b (b.barang_masuk_id)}
 				{@const next = pratinjau(b)}
 				{@const jual = channel === 'MT' ? next.mt : next.gt}
-				<li class="text-xs leading-snug text-slate-600">
+				<li class="text-xs leading-snug text-muted-foreground">
 					<span class="font-mono">{b.no_batch}</span>
 					· {persenMarkup(next.list, amount, tipe)}% = {formatRupiah(rupiahMarkup(next.list, amount, tipe))}
 					dari list {formatRupiah(next.list)}

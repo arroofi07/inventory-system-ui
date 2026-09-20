@@ -1,5 +1,8 @@
 <script lang="ts">
 	import Field from '$lib/components/form/Field.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
 
 	type BarangFormPayload = {
 		kode_barang: string;
@@ -68,6 +71,10 @@
 		return [...SATUAN_OPSI];
 	});
 
+	const satuanTriggerLabel = $derived(
+		opsiSatuan.find((o) => o.value === satuan)?.label ?? 'Pilih…'
+	);
+
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
 		if (menyimpan || disabled || hideSubmit || !onsubmit) return;
@@ -91,9 +98,9 @@
 
 {#snippet fields()}
 	<Field label="Kode barang" required forId={`${uid}-kode`} error={errors.kode_barang}>
-		<input
+		<Input
 			id={`${uid}-kode`}
-			class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm disabled:bg-slate-50"
+			class="font-mono"
 			bind:value={kodeBarang}
 			disabled={mode === 'ubah' || disabled || menyimpan}
 			required
@@ -101,9 +108,8 @@
 		/>
 	</Field>
 	<Field label="Nama item" required forId={`${uid}-nama`} error={errors.nama_item}>
-		<input
+		<Input
 			id={`${uid}-nama`}
-			class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 			bind:value={namaItem}
 			disabled={disabled || menyimpan}
 			required
@@ -111,9 +117,8 @@
 		/>
 	</Field>
 	<Field label="Brand" required forId={`${uid}-brand`} error={errors.brand}>
-		<input
+		<Input
 			id={`${uid}-brand`}
-			class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 			bind:value={brand}
 			disabled={disabled || menyimpan}
 			required
@@ -122,29 +127,23 @@
 	</Field>
 	<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 		<Field label="Satuan" forId={`${uid}-satuan`}>
-			<select
-				id={`${uid}-satuan`}
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-				bind:value={satuan}
-				disabled={disabled || menyimpan}
-			>
-				{#each opsiSatuan as opsi (opsi.value)}
-					<option value={opsi.value}>{opsi.label}</option>
-				{/each}
-			</select>
+			<Select.Root type="single" bind:value={satuan} disabled={disabled || menyimpan}>
+				<Select.Trigger id={`${uid}-satuan`} class="w-full">
+					{satuanTriggerLabel}
+				</Select.Trigger>
+				<Select.Content>
+					{#each opsiSatuan as opsi (opsi.value)}
+						<Select.Item value={opsi.value} label={opsi.label}>{opsi.label}</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
 		</Field>
 		<Field
 			label="Metode alokasi"
 			forId={`${uid}-alokasi`}
 			hint="Dikunci FEFO: batch yang kedaluwarsa lebih dulu dikeluarkan lebih dulu."
 		>
-			<input
-				id={`${uid}-alokasi`}
-				class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
-				value="FEFO"
-				readonly
-				tabindex="-1"
-			/>
+			<Input id={`${uid}-alokasi`} value="FEFO" readonly tabindex={-1} />
 		</Field>
 	</div>
 {/snippet}
@@ -157,13 +156,9 @@
 	<form class="grid max-w-xl gap-4" onsubmit={handleSubmit}>
 		{@render fields()}
 		<div class="flex gap-2 pt-2">
-			<button
-				type="submit"
-				class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800 disabled:opacity-50"
-				disabled={disabled || menyimpan}
-			>
+			<Button type="submit" disabled={disabled || menyimpan}>
 				{menyimpan ? 'Menyimpan…' : mode === 'buat' ? 'Simpan barang' : 'Simpan perubahan'}
-			</button>
+			</Button>
 		</div>
 	</form>
 {/if}

@@ -1,5 +1,11 @@
 <script lang="ts">
+	import type { Attachment } from 'svelte/attachments';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { cn } from '$lib/utils.js';
+
 	type Option = { value: string; label: string };
+	type ComboboxKey = 'ArrowDown' | 'ArrowUp' | 'Enter' | 'Escape';
 
 	interface Props {
 		options?: Option[];
@@ -22,7 +28,6 @@
 	let open = $state(false);
 	let query = $state('');
 	let highlight = $state(0);
-	let rootEl: HTMLDivElement | undefined = $state();
 
 	const filtered = $derived.by(() => {
 		const q = query.trim().toLowerCase();
@@ -34,6 +39,14 @@
 
 	const selectedLabel = $derived(options.find((o) => o.value === value)?.label ?? '');
 
+	const tutupSaatKlikLuar: Attachment<HTMLDivElement> = (node) => {
+		function onDocClick(e: MouseEvent) {
+			if (!node.contains(e.target as Node)) open = false;
+		}
+		window.addEventListener('click', onDocClick);
+		return () => window.removeEventListener('click', onDocClick);
+	};
+
 	function pilih(opt: Option) {
 		value = opt.value;
 		query = '';
@@ -43,7 +56,12 @@
 
 	function onKeydown(e: KeyboardEvent) {
 		if (disabled) return;
-		switch (e.key) {
+		const key = e.key;
+		if (key !== 'ArrowDown' && key !== 'ArrowUp' && key !== 'Enter' && key !== 'Escape') {
+			return;
+		}
+		const action: ComboboxKey = key;
+		switch (action) {
 			case 'ArrowDown':
 				e.preventDefault();
 				open = true;
@@ -63,20 +81,16 @@
 			case 'Escape':
 				open = false;
 				break;
-			default:
-				break;
+			default: {
+				const _exhaustive: never = action;
+				return _exhaustive;
+			}
 		}
-	}
-
-	function onDocClick(e: MouseEvent) {
-		if (rootEl && !rootEl.contains(e.target as Node)) open = false;
 	}
 </script>
 
-<svelte:window onclick={onDocClick} />
-
-<div class="relative w-full min-w-0" bind:this={rootEl}>
-	<input
+<div class="relative w-full min-w-0" {@attach tutupSaatKlikLuar}>
+	<Input
 		{id}
 		{disabled}
 		type="text"
@@ -84,7 +98,7 @@
 		aria-expanded={open}
 		aria-autocomplete="list"
 		aria-controls={id ? `${id}-list` : undefined}
-		class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-slate-50 md:py-2 md:text-sm"
+		class="md:py-2"
 		placeholder={selectedLabel || placeholder}
 		value={open ? query : selectedLabel}
 		onfocus={() => {
@@ -102,23 +116,25 @@
 		<ul
 			id={id ? `${id}-list` : undefined}
 			role="listbox"
-			class="absolute z-50 mt-1 max-h-[min(16rem,50vh)] w-full overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-md"
+			class="bg-popover text-popover-foreground absolute z-50 mt-1 max-h-[min(16rem,50vh)] w-full overflow-auto rounded-md border py-1 shadow-md"
 		>
 			{#if filtered.length === 0}
-				<li class="px-3 py-2 text-sm text-muted">Tidak ada pilihan</li>
+				<li class="text-muted-foreground px-3 py-2 text-sm">Tidak ada pilihan</li>
 			{:else}
 				{#each filtered as opt, i (opt.value)}
 					<li role="option" aria-selected={opt.value === value}>
-						<button
+						<Button
 							type="button"
-							class="flex min-h-11 w-full px-3 py-2.5 text-left text-sm hover:bg-brand-50 {i === highlight
-								? 'bg-brand-50'
-								: ''}"
+							variant="ghost"
+							class={cn(
+								'h-auto min-h-11 w-full justify-start rounded-none px-3 py-2.5 text-left text-sm',
+								i === highlight && 'bg-primary/10 text-primary'
+							)}
 							onmouseenter={() => (highlight = i)}
 							onclick={() => pilih(opt)}
 						>
 							{opt.label}
-						</button>
+						</Button>
 					</li>
 				{/each}
 			{/if}

@@ -2,6 +2,9 @@
 	import Field from '$lib/components/form/Field.svelte';
 	import CurrencyInput from '$lib/components/form/CurrencyInput.svelte';
 	import Modal from '$lib/components/feedback/Modal.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { catatPembayaran, type HasilPembayaran, type PiutangItem } from '$lib/api/piutang';
 	import { formatRupiah } from '$lib/domain/format';
 	import { showToast } from '$lib/stores/toast.svelte';
@@ -77,7 +80,7 @@
 <Modal bind:open title="Catat pembayaran">
 	{#if row}
 		<div class="space-y-3 text-sm">
-			<p class="text-muted">
+			<p class="text-muted-foreground">
 				{row.kode_pelanggan} — {row.nama_pelanggan}
 				{#if row.no_transaksi}
 					· No {row.no_transaksi}
@@ -85,30 +88,30 @@
 					· #{row.transaksi_id}
 				{/if}
 			</p>
-			<div class="grid grid-cols-2 gap-2 rounded border border-slate-200 bg-slate-50 p-2 text-xs">
+			<div class="border-primary/20 bg-primary/5 grid grid-cols-2 gap-2 rounded-2xl border p-2 text-xs">
 				<div>
-					<p class="text-slate-500">Total akhir</p>
+					<p class="text-primary/70">Total akhir</p>
 					<p class="font-medium">{formatRupiah(row.total_akhir)}</p>
 				</div>
 				<div>
-					<p class="text-slate-500">Sisa hutang</p>
+					<p class="text-primary/70">Sisa hutang</p>
 					<p class="font-medium">{formatRupiah(hasil?.sisa_hutang ?? row.sisa_hutang)}</p>
 				</div>
 				<div>
-					<p class="text-slate-500">Sudah dibayar</p>
+					<p class="text-primary/70">Sudah dibayar</p>
 					<p class="font-medium">{formatRupiah(hasil?.jumlah_dibayar ?? row.jumlah_dibayar)}</p>
 				</div>
 				<div>
-					<p class="text-slate-500">Status (server)</p>
+					<p class="text-primary/70">Status (server)</p>
 					<p class="font-medium">{hasil?.status_pembayaran ?? row.status_pembayaran}</p>
 				</div>
 			</div>
-			<p class="text-xs text-slate-500">
+			<p class="text-xs text-muted-foreground">
 				Status lunas/hutang/sebagian ditentukan server dari nominal — tidak dipilih manual.
 			</p>
 
 			{#if hasil}
-				<p class="rounded border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-emerald-900">
+				<p class="rounded-2xl border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-emerald-900">
 					Tercatat. Status: <strong>{hasil.status_pembayaran}</strong> · dibayar
 					{formatRupiah(hasil.jumlah_dibayar)} · sisa {formatRupiah(hasil.sisa_hutang)}
 				</p>
@@ -117,28 +120,17 @@
 					<CurrencyInput id="bayar-nom" bind:value={nominal} />
 				</Field>
 				<Field label="Tanggal pembayaran" forId="bayar-tgl">
-					<input
-						id="bayar-tgl"
-						type="date"
-						class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-						bind:value={tanggal}
-					/>
+					<Input id="bayar-tgl" type="date" bind:value={tanggal} />
 				</Field>
 				<Field label="Metode" forId="bayar-met">
-					<input
+					<Input
 						id="bayar-met"
-						class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 						placeholder="Transfer / tunai…"
 						bind:value={metode}
 					/>
 				</Field>
 				<Field label="Keterangan" forId="bayar-ket">
-					<textarea
-						id="bayar-ket"
-						rows="2"
-						class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-						bind:value={keterangan}
-					></textarea>
+					<Textarea id="bayar-ket" rows={2} bind:value={keterangan} />
 				</Field>
 				{#if errorMsg}
 					<p class="text-sm text-bahaya">{errorMsg}</p>
@@ -148,22 +140,17 @@
 	{/if}
 
 	{#snippet footer()}
-		<button
-			type="button"
-			class="rounded border border-slate-300 px-3 py-1.5 text-sm"
-			onclick={() => (open = false)}
-		>
+		<Button type="button" variant="outline" onclick={() => (open = false)}>
 			{hasil ? 'Tutup' : 'Batal'}
-		</button>
+		</Button>
 		{#if !hasil}
-			<button
+			<Button
 				type="button"
-				class="rounded bg-slate-900 px-3 py-1.5 text-sm text-white disabled:opacity-50"
 				disabled={menyimpan || !row}
 				onclick={() => void kirim()}
 			>
 				{menyimpan ? 'Menyimpan…' : 'Simpan'}
-			</button>
+			</Button>
 		{/if}
 	{/snippet}
 </Modal>

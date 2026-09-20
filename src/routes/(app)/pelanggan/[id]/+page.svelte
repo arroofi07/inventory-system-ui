@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Badge from '$lib/components/data/Badge.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
 	import { detailPelanggan, setStatusPelanggan, type Pelanggan } from '$lib/api/pelanggan';
 	import { ApiError } from '$lib/api/http';
 	import { auth } from '$lib/stores/auth.svelte';
@@ -55,9 +57,9 @@
 </script>
 
 <div class="space-y-4">
-	<a href={resolveAppPath('/pelanggan')} class="text-sm text-brand-700 underline"
-		>← Kembali ke daftar</a
-	>
+	<Button variant="link" class="h-auto p-0" href={resolveAppPath('/pelanggan')}>
+		← Kembali ke daftar
+	</Button>
 
 	{#if loading}
 		<p class="text-sm text-muted">Memuat…</p>
@@ -83,48 +85,43 @@
 		</header>
 
 		<section class="grid gap-3 sm:grid-cols-2">
-			<div class="rounded-[var(--radius-card)] border border-slate-200 bg-white p-4 text-sm">
-				<p><span class="text-muted">Telepon:</span> {item.phone}</p>
-				<p><span class="text-muted">Registrasi:</span> {item.tgl_registrasi}</p>
-				<p class="mt-2"><span class="text-muted">Alamat toko:</span></p>
-				<p>{item.alamat_toko}</p>
-				<p class="mt-2 text-muted">
-					{item.kelurahan}, {item.kecamatan}, {item.kabupaten}, {item.provinsi}
-					{#if item.kode_pos}
-						({item.kode_pos})
+			<Card.Root class="gap-0 border border-primary/20 bg-white p-4 shadow-none ring-0">
+				<Card.Content class="space-y-1 p-0 text-sm">
+					<p><span class="text-muted">Telepon:</span> {item.phone}</p>
+					<p><span class="text-muted">Registrasi:</span> {item.tgl_registrasi}</p>
+					<p class="mt-2"><span class="text-muted">Alamat toko:</span></p>
+					<p>{item.alamat_toko}</p>
+					<p class="mt-2 text-muted">
+						{item.kelurahan}, {item.kecamatan}, {item.kabupaten}, {item.provinsi}
+						{#if item.kode_pos}
+							({item.kode_pos})
+						{/if}
+					</p>
+				</Card.Content>
+			</Card.Root>
+			<Card.Root class="gap-0 border border-primary/20 bg-white p-4 shadow-none ring-0">
+				<Card.Content class="space-y-1 p-0 text-sm">
+					<p>
+						<span class="text-muted">Pengambilan pertama:</span>
+						{formatRupiah(item.nominal_pengambilan_pertama)}
+					</p>
+					<p>
+						<span class="text-muted">Batas kredit:</span>
+						{formatRupiah(item.estimasi_batas_kredit)}
+					</p>
+					{#if item.npwp_nik}
+						<p class="mt-2"><span class="text-muted">NPWP/NIK:</span> {item.npwp_nik}</p>
 					{/if}
-				</p>
-			</div>
-			<div class="rounded-[var(--radius-card)] border border-slate-200 bg-white p-4 text-sm">
-				<p>
-					<span class="text-muted">Pengambilan pertama:</span>
-					{formatRupiah(item.nominal_pengambilan_pertama)}
-				</p>
-				<p>
-					<span class="text-muted">Batas kredit:</span>
-					{formatRupiah(item.estimasi_batas_kredit)}
-				</p>
-				{#if item.npwp_nik}
-					<p class="mt-2"><span class="text-muted">NPWP/NIK:</span> {item.npwp_nik}</p>
-				{/if}
-			</div>
+				</Card.Content>
+			</Card.Root>
 		</section>
 
 		<div class="flex flex-wrap gap-2">
 			{#if bisaUbah}
-				<a
-					href={resolveAppPath(`/pelanggan/${item.id}/ubah`)}
-					class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white"
-				>
-					Ubah
-				</a>
-				<button
-					type="button"
-					class="rounded-lg border border-slate-300 px-4 py-2 text-sm"
-					onclick={toggleAktif}
-				>
+				<Button href={resolveAppPath(`/pelanggan/${item.id}/ubah`)}>Ubah</Button>
+				<Button variant="outline" type="button" onclick={toggleAktif}>
 					{item.is_active ? 'Nonaktifkan' : 'Aktifkan'}
-				</button>
+				</Button>
 			{/if}
 		</div>
 	{/if}

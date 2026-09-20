@@ -1,10 +1,14 @@
 <script lang="ts">
 	import Pagination from '$lib/components/data/Pagination.svelte';
 	import FilterBar from '$lib/components/data/FilterBar.svelte';
+	import StatCard from '$lib/components/data/StatCard.svelte';
 	import Field from '$lib/components/form/Field.svelte';
 	import Combobox from '$lib/components/form/Combobox.svelte';
 	import Skeleton from '$lib/components/feedback/Skeleton.svelte';
 	import EmptyState from '$lib/components/data/EmptyState.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import * as Table from '$lib/components/ui/table/index.js';
 	import {
 		daftarLaporanStok,
 		unduhEksporStok,
@@ -91,7 +95,7 @@
 			case 'NORMAL':
 				return { text: 'Normal', className: 'bg-emerald-100 text-emerald-800' };
 			default:
-				return { text: s || '—', className: 'bg-slate-100 text-slate-600' };
+				return { text: s || '—', className: 'bg-primary/10 text-muted-foreground' };
 		}
 	}
 
@@ -112,40 +116,25 @@
 			<p class="text-sm text-muted">Status Normal / Rendah / Habis per SKU aktif.</p>
 		</div>
 		{#if bisaEkspor}
-			<button
-				type="button"
-				class="rounded border border-slate-300 bg-white px-3 py-2 text-sm hover:border-brand-300"
-				onclick={() => void unduh()}
-			>
-				Ekspor CSV
-			</button>
+			<Button variant="outline" onclick={() => void unduh()}>Ekspor CSV</Button>
 		{/if}
 	</header>
 
 	<div class="grid gap-3 sm:grid-cols-3">
-		<div class="rounded border border-emerald-200 bg-emerald-50 px-3 py-2">
-			<p class="text-xs text-emerald-800">Normal</p>
-			<p class="text-lg font-semibold tabular-nums">{ringkasan.normal}</p>
-		</div>
-		<div class="rounded border border-amber-200 bg-amber-50 px-3 py-2">
-			<p class="text-xs text-amber-900">Rendah</p>
-			<p class="text-lg font-semibold tabular-nums">{ringkasan.rendah}</p>
-		</div>
-		<div class="rounded border border-red-200 bg-red-50 px-3 py-2">
-			<p class="text-xs text-red-800">Habis</p>
-			<p class="text-lg font-semibold tabular-nums">{ringkasan.habis}</p>
-		</div>
+		<StatCard label="Normal" value={String(ringkasan.normal)} tone="sukses" />
+		<StatCard label="Rendah" value={String(ringkasan.rendah)} tone="peringatan" />
+		<StatCard label="Habis" value={String(ringkasan.habis)} tone="bahaya" />
 	</div>
 
 	<FilterBar onreset={resetFilter}>
-		<Field label="Cari">
-			<input class="input" bind:value={q} placeholder="Kode / nama / brand" />
+		<Field label="Cari" forId="ls-q">
+			<Input id="ls-q" class="w-full" bind:value={q} placeholder="Kode / nama / brand" />
 		</Field>
-		<Field label="Brand">
-			<input class="input" bind:value={brand} placeholder="Brand" />
+		<Field label="Brand" forId="ls-br">
+			<Input id="ls-br" class="w-full" bind:value={brand} placeholder="Brand" />
 		</Field>
-		<Field label="Status stok">
-			<Combobox options={statusOpts} bind:value={statusStok} />
+		<Field label="Status stok" forId="ls-st">
+			<Combobox id="ls-st" options={statusOpts} bind:value={statusStok} />
 		</Field>
 	</FilterBar>
 
@@ -154,40 +143,42 @@
 	{:else if rows.length === 0}
 		<EmptyState title="Tidak ada data" description="Ubah filter atau pastikan ada barang aktif." />
 	{:else}
-		<div class="overflow-x-auto rounded border border-slate-200">
-			<table class="min-w-full text-left text-sm">
-				<thead class="bg-slate-50 text-xs uppercase text-slate-500">
-					<tr>
-						<th class="px-3 py-2">Kode</th>
-						<th class="px-3 py-2">Nama</th>
-						<th class="px-3 py-2">Brand</th>
-						<th class="px-3 py-2 text-right">Stok</th>
-						<th class="px-3 py-2 text-right">Min</th>
-						<th class="px-3 py-2">Status</th>
-						<th class="px-3 py-2 text-right">Batch</th>
-						<th class="px-3 py-2">Exp terdekat</th>
-						<th class="px-3 py-2 text-right">Nilai HPP</th>
-					</tr>
-				</thead>
-				<tbody>
+		<div class="overflow-hidden rounded-[var(--radius-card)] border border-primary/20 bg-white">
+			<Table.Root>
+				<Table.Header>
+					<Table.Row class="hover:bg-transparent">
+						<Table.Head class="px-3 py-2">Kode</Table.Head>
+						<Table.Head class="px-3 py-2">Nama</Table.Head>
+						<Table.Head class="px-3 py-2">Brand</Table.Head>
+						<Table.Head class="px-3 py-2 text-right">Stok</Table.Head>
+						<Table.Head class="px-3 py-2 text-right">Min</Table.Head>
+						<Table.Head class="px-3 py-2">Status</Table.Head>
+						<Table.Head class="px-3 py-2 text-right">Batch</Table.Head>
+						<Table.Head class="px-3 py-2">Exp terdekat</Table.Head>
+						<Table.Head class="px-3 py-2 text-right">Nilai HPP</Table.Head>
+					</Table.Row>
+				</Table.Header>
+				<Table.Body>
 					{#each rows as row (row.kode_barang)}
 						{@const badge = badgeStatus(row.status_stok)}
-						<tr class="border-t border-slate-100">
-							<td class="px-3 py-2 font-mono text-xs">{row.kode_barang}</td>
-							<td class="px-3 py-2">{row.nama_item}</td>
-							<td class="px-3 py-2">{row.brand}</td>
-							<td class="px-3 py-2 text-right tabular-nums">{row.stok_tersedia}</td>
-							<td class="px-3 py-2 text-right tabular-nums">{row.min_stock}</td>
-							<td class="px-3 py-2">
+						<Table.Row>
+							<Table.Cell class="px-3 py-2 font-mono text-xs">{row.kode_barang}</Table.Cell>
+							<Table.Cell class="px-3 py-2">{row.nama_item}</Table.Cell>
+							<Table.Cell class="px-3 py-2">{row.brand}</Table.Cell>
+							<Table.Cell class="px-3 py-2 text-right tabular-nums">{row.stok_tersedia}</Table.Cell>
+							<Table.Cell class="px-3 py-2 text-right tabular-nums">{row.min_stock}</Table.Cell>
+							<Table.Cell class="px-3 py-2">
 								<span class="rounded px-1.5 py-0.5 text-xs {badge.className}">{badge.text}</span>
-							</td>
-							<td class="px-3 py-2 text-right tabular-nums">{row.jumlah_batch}</td>
-							<td class="px-3 py-2 tabular-nums">{row.batch_terdekat_exp ?? '—'}</td>
-							<td class="px-3 py-2 text-right tabular-nums">{formatRupiah(row.nilai_stok_hpp)}</td>
-						</tr>
+							</Table.Cell>
+							<Table.Cell class="px-3 py-2 text-right tabular-nums">{row.jumlah_batch}</Table.Cell>
+							<Table.Cell class="px-3 py-2 tabular-nums">{row.batch_terdekat_exp ?? '—'}</Table.Cell>
+							<Table.Cell class="px-3 py-2 text-right tabular-nums"
+								>{formatRupiah(row.nilai_stok_hpp)}</Table.Cell
+							>
+						</Table.Row>
 					{/each}
-				</tbody>
-			</table>
+				</Table.Body>
+			</Table.Root>
 		</div>
 		<Pagination
 			page={meta.page}

@@ -1,10 +1,14 @@
 <script lang="ts">
 	import Pagination from '$lib/components/data/Pagination.svelte';
 	import FilterBar from '$lib/components/data/FilterBar.svelte';
+	import StatCard from '$lib/components/data/StatCard.svelte';
 	import Field from '$lib/components/form/Field.svelte';
 	import Combobox from '$lib/components/form/Combobox.svelte';
 	import Skeleton from '$lib/components/feedback/Skeleton.svelte';
 	import EmptyState from '$lib/components/data/EmptyState.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import * as Table from '$lib/components/ui/table/index.js';
 	import {
 		daftarLaporanPenjualan,
 		unduhEksporPenjualan,
@@ -126,45 +130,39 @@
 			</p>
 		</div>
 		{#if bisaEkspor}
-			<button
-				type="button"
-				class="rounded border border-slate-300 bg-white px-3 py-2 text-sm hover:border-brand-300"
-				onclick={() => void unduh()}
-			>
-				Ekspor CSV
-			</button>
+			<Button variant="outline" onclick={() => void unduh()}>Ekspor CSV</Button>
 		{/if}
 	</header>
 
 	<div class="grid gap-3 sm:grid-cols-2">
-		<div class="rounded border border-slate-200 bg-white px-3 py-2">
-			<p class="text-xs text-slate-500">Jumlah transaksi</p>
-			<p class="text-lg font-semibold tabular-nums">{ringkasan.jumlah_transaksi}</p>
-		</div>
-		<div class="rounded border border-slate-200 bg-white px-3 py-2">
-			<p class="text-xs text-slate-500">Total penjualan</p>
-			<p class="text-lg font-semibold tabular-nums">{formatRupiah(ringkasan.total_penjualan)}</p>
-		</div>
+		<StatCard label="Jumlah transaksi" value={String(ringkasan.jumlah_transaksi)} />
+		<StatCard label="Total penjualan" value={formatRupiah(ringkasan.total_penjualan)} />
 	</div>
 
 	<FilterBar onreset={resetFilter}>
-		<Field label="Cari">
-			<input class="input" bind:value={q} placeholder="No trx / pelanggan" />
+		<Field label="Cari" forId="lp-q">
+			<Input id="lp-q" class="w-full" bind:value={q} placeholder="No trx / pelanggan" />
 		</Field>
-		<Field label="Channel">
-			<Combobox options={channelOpts} bind:value={channel} />
+		<Field label="Channel" forId="lp-ch">
+			<Combobox id="lp-ch" options={channelOpts} bind:value={channel} />
 		</Field>
-		<Field label="Sales ID">
-			<input class="input" bind:value={salesId} placeholder="opsional" inputmode="numeric" />
+		<Field label="Sales ID" forId="lp-sid">
+			<Input
+				id="lp-sid"
+				class="w-full"
+				bind:value={salesId}
+				placeholder="opsional"
+				inputmode="numeric"
+			/>
 		</Field>
-		<Field label="Status bayar">
-			<Combobox options={bayarOpts} bind:value={statusBayar} />
+		<Field label="Status bayar" forId="lp-sb">
+			<Combobox id="lp-sb" options={bayarOpts} bind:value={statusBayar} />
 		</Field>
-		<Field label="Dari">
-			<input class="input" type="date" bind:value={dateFrom} />
+		<Field label="Dari" forId="lp-df">
+			<Input id="lp-df" class="w-full" type="date" bind:value={dateFrom} />
 		</Field>
-		<Field label="Sampai">
-			<input class="input" type="date" bind:value={dateTo} />
+		<Field label="Sampai" forId="lp-dt">
+			<Input id="lp-dt" class="w-full" type="date" bind:value={dateTo} />
 		</Field>
 	</FilterBar>
 
@@ -173,44 +171,50 @@
 	{:else if rows.length === 0}
 		<EmptyState title="Tidak ada data" description="Tidak ada penjualan approved untuk filter ini." />
 	{:else}
-		<div class="overflow-x-auto rounded border border-slate-200">
-			<table class="min-w-full text-left text-sm">
-				<thead class="bg-slate-50 text-xs uppercase text-slate-500">
-					<tr>
-						<th class="px-3 py-2">Tanggal</th>
-						<th class="px-3 py-2">No</th>
-						<th class="px-3 py-2">Pelanggan</th>
-						<th class="px-3 py-2">Channel</th>
-						<th class="px-3 py-2">Area</th>
-						<th class="px-3 py-2 text-right">Qty</th>
-						<th class="px-3 py-2">Bayar</th>
-						<th class="px-3 py-2 text-right">Total</th>
-					</tr>
-				</thead>
-				<tbody>
+		<div class="overflow-hidden rounded-[var(--radius-card)] border border-primary/20 bg-white">
+			<Table.Root>
+				<Table.Header>
+					<Table.Row class="hover:bg-transparent">
+						<Table.Head class="px-3 py-2">Tanggal</Table.Head>
+						<Table.Head class="px-3 py-2">No</Table.Head>
+						<Table.Head class="px-3 py-2">Pelanggan</Table.Head>
+						<Table.Head class="px-3 py-2">Channel</Table.Head>
+						<Table.Head class="px-3 py-2">Area</Table.Head>
+						<Table.Head class="px-3 py-2 text-right">Qty</Table.Head>
+						<Table.Head class="px-3 py-2">Bayar</Table.Head>
+						<Table.Head class="px-3 py-2 text-right">Total</Table.Head>
+					</Table.Row>
+				</Table.Header>
+				<Table.Body>
 					{#each rows as row (row.id)}
-						<tr class="border-t border-slate-100">
-							<td class="px-3 py-2 tabular-nums">{row.tanggal}</td>
-							<td class="px-3 py-2">
-								<a class="font-mono text-xs text-brand-700 underline" href={resolveAppPath(`/transaksi/${row.id}`)}>
+						<Table.Row>
+							<Table.Cell class="px-3 py-2 tabular-nums">{row.tanggal}</Table.Cell>
+							<Table.Cell class="px-3 py-2">
+								<Button
+									variant="link"
+									class="h-auto p-0 font-mono text-xs"
+									href={resolveAppPath(`/transaksi/${row.id}`)}
+								>
 									{row.no_transaksi ?? row.id}
-								</a>
-							</td>
-							<td class="px-3 py-2">
-								<span class="block text-xs text-slate-500">{row.kode_pelanggan}</span>
+								</Button>
+							</Table.Cell>
+							<Table.Cell class="px-3 py-2">
+								<span class="block text-xs text-primary/70">{row.kode_pelanggan}</span>
 								{row.nama_pelanggan}
-							</td>
-							<td class="px-3 py-2">{row.channel_outlet}</td>
-							<td class="px-3 py-2">{row.area}</td>
-							<td class="px-3 py-2 text-right tabular-nums">
+							</Table.Cell>
+							<Table.Cell class="px-3 py-2">{row.channel_outlet}</Table.Cell>
+							<Table.Cell class="px-3 py-2">{row.area}</Table.Cell>
+							<Table.Cell class="px-3 py-2 text-right tabular-nums">
 								{row.total_qty_ditagih}/{row.total_qty_keluar}
-							</td>
-							<td class="px-3 py-2">{row.status_pembayaran}</td>
-							<td class="px-3 py-2 text-right tabular-nums">{formatRupiah(row.total_akhir)}</td>
-						</tr>
+							</Table.Cell>
+							<Table.Cell class="px-3 py-2">{row.status_pembayaran}</Table.Cell>
+							<Table.Cell class="px-3 py-2 text-right tabular-nums"
+								>{formatRupiah(row.total_akhir)}</Table.Cell
+							>
+						</Table.Row>
 					{/each}
-				</tbody>
-			</table>
+				</Table.Body>
+			</Table.Root>
 		</div>
 		<Pagination
 			page={meta.page}

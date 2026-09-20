@@ -2,14 +2,22 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { onMount } from 'svelte';
+	import { ModeWatcher, setMode } from 'mode-watcher';
+	import { Toaster } from '$lib/components/ui/sonner/index.js';
 	import { auth } from '$lib/stores/auth.svelte';
 
 	let { children } = $props();
 
 	onMount(() => {
+		setMode('light');
+		document.documentElement.classList.remove('dark');
+		document.documentElement.style.colorScheme = 'light';
 		void auth.pulihkanSesi();
 	});
 </script>
+
+<ModeWatcher defaultMode="light" track={false} />
+<Toaster theme="light" position="bottom-right" richColors closeButton />
 
 <svelte:head>
 	<link rel="icon" href={favicon} />

@@ -3,6 +3,8 @@
 	import Field from '$lib/components/form/Field.svelte';
 	import NumberInput from '$lib/components/form/NumberInput.svelte';
 	import HargaPenerimaan from '$lib/components/barang-masuk/HargaPenerimaan.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 	import {
 		detailBarangMasuk,
 		ubahBarangMasuk,
@@ -113,9 +115,9 @@
 </script>
 
 <div class="space-y-4">
-	<a href={resolveAppPath(`/barang-masuk/${id}`)} class="text-sm text-brand-700 underline"
-		>← Kembali ke detail</a
-	>
+	<Button variant="link" class="h-auto p-0" href={resolveAppPath(`/barang-masuk/${id}`)}>
+		← Kembali ke detail
+	</Button>
 	<header>
 		<h1 class="font-display text-2xl text-ink">Ubah penerimaan</h1>
 		{#if item}
@@ -136,57 +138,31 @@
 		>
 			<div class="grid gap-3 sm:grid-cols-2">
 				<Field label="No. faktur" required forId="faktur" error={errors.no_faktur}>
-					<input
-						id="faktur"
-						class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-						bind:value={noFaktur}
-						required
-						disabled={menyimpan}
-					/>
+					<Input id="faktur" bind:value={noFaktur} required disabled={menyimpan} />
 				</Field>
 				<Field label="No. batch" required forId="batch" error={errors.no_batch}>
-					<input
-						id="batch"
-						class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-						bind:value={noBatch}
-						required
-						disabled={menyimpan}
-					/>
+					<Input id="batch" bind:value={noBatch} required disabled={menyimpan} />
 				</Field>
 			</div>
 
 			<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 				<Field label="Tanggal masuk" required forId="tgl">
-					<input
-						id="tgl"
-						type="date"
-						class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-						bind:value={tanggalMasuk}
-						required
-						disabled={menyimpan}
-					/>
+					<Input id="tgl" type="date" bind:value={tanggalMasuk} required disabled={menyimpan} />
 				</Field>
 				<Field label="Exp" required forId="exp" error={errors.exp}>
-					<input
-						id="exp"
-						type="date"
-						class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-						bind:value={exp}
-						required
-						disabled={menyimpan}
-					/>
+					<Input id="exp" type="date" bind:value={exp} required disabled={menyimpan} />
 				</Field>
 				<Field label="Qty" required forId="qty" error={errors.qty}>
 					<NumberInput id="qty" min={1} bind:value={qty} required disabled={menyimpan} />
 				</Field>
 				<Field label="Aging (bulan)" forId="aging" hint="Otomatis dari tanggal masuk ke exp">
-					<input
+					<Input
 						id="aging"
 						type="text"
 						readonly
-						class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm tabular-nums"
+						class="bg-primary/5 tabular-nums"
 						value={exp ? String(agingBulan) : '—'}
-						tabindex="-1"
+						tabindex={-1}
 					/>
 				</Field>
 			</div>
@@ -204,13 +180,9 @@
 				disabled={menyimpan}
 			/>
 
-			<button
-				type="submit"
-				class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800 disabled:opacity-50"
-				disabled={menyimpan}
-			>
+			<Button type="submit" disabled={menyimpan}>
 				{menyimpan ? 'Menyimpan…' : 'Simpan perubahan'}
-			</button>
+			</Button>
 		</form>
 	{/if}
 </div>

@@ -1,5 +1,8 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { IconLogout, IconMenu2, IconX } from '@tabler/icons-svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { pergiKe } from '$lib/nav';
 	import { auth } from '$lib/stores/auth.svelte';
 	import NotificationBell from './NotificationBell.svelte';
@@ -10,38 +13,33 @@
 		children
 	}: { title?: string; open?: boolean; children?: Snippet } = $props();
 
-	let menuOpen = $state(false);
-
 	async function logout() {
-		menuOpen = false;
 		await auth.logout();
 		await pergiKe('/login');
 	}
 </script>
 
 <header
-	class="tanpa-cetak sticky top-0 z-50 flex h-14 shrink-0 items-center justify-between gap-2 border-b border-brand-100 bg-white px-3 sm:gap-3 sm:px-4"
+	class="tanpa-cetak bg-background sticky top-0 z-50 flex h-14 shrink-0 items-center justify-between gap-2 border-b border-primary/15 px-3 sm:gap-3 sm:px-4"
 >
 	<div class="flex min-w-0 flex-1 items-center gap-2">
-		<button
+		<Button
 			type="button"
-			class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-ink hover:bg-slate-50 lg:hidden"
+			variant="ghost"
+			size="icon"
+			class="shrink-0 lg:hidden"
 			onclick={() => (open = !open)}
 			aria-expanded={open}
 			aria-controls="app-sidebar"
 			aria-label={open ? 'Tutup menu' : 'Buka menu'}
 		>
 			{#if open}
-				<span class="text-lg leading-none" aria-hidden="true">×</span>
+				<IconX />
 			{:else}
-				<span class="flex flex-col gap-1" aria-hidden="true">
-					<span class="block h-0.5 w-4 rounded bg-current"></span>
-					<span class="block h-0.5 w-4 rounded bg-current"></span>
-					<span class="block h-0.5 w-4 rounded bg-current"></span>
-				</span>
+				<IconMenu2 />
 			{/if}
-		</button>
-		<h1 class="truncate text-base font-semibold text-[var(--color-ink)]">{title}</h1>
+		</Button>
+		<h1 class="text-foreground truncate text-base font-semibold">{title}</h1>
 	</div>
 
 	<div class="flex shrink-0 items-center gap-1 sm:gap-3">
@@ -54,48 +52,34 @@
 		<NotificationBell />
 
 		{#if auth.user}
-			<div class="relative">
-				<button
-					type="button"
-					class="flex items-center gap-2 rounded-md px-1.5 py-1.5 text-sm hover:bg-slate-50 sm:px-2"
-					onclick={() => (menuOpen = !menuOpen)}
-					aria-expanded={menuOpen}
-					aria-haspopup="menu"
-				>
-					<span class="hidden max-w-[10rem] truncate sm:inline">{auth.user.name}</span>
-					<span
-						class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-800"
-					>
-						{auth.user.name.slice(0, 1).toUpperCase()}
-					</span>
-				</button>
-
-				{#if menuOpen}
-					<div
-						class="absolute right-0 z-20 mt-1 w-48 rounded-md border border-slate-200 bg-white py-1 shadow-md"
-						role="menu"
-					>
-						<p class="truncate px-3 py-1.5 text-xs text-slate-500">{auth.user.email}</p>
-						<button
-							type="button"
-							class="block w-full px-3 py-2.5 text-left text-sm text-bahaya hover:bg-red-50"
-							role="menuitem"
-							onclick={logout}
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger>
+					{#snippet child({ props })}
+						<Button
+							variant="ghost"
+							class="flex items-center gap-2 px-1.5 sm:px-2"
+							{...props}
 						>
-							Keluar
-						</button>
-					</div>
-				{/if}
-			</div>
+							<span class="hidden max-w-[10rem] truncate sm:inline">{auth.user?.name}</span>
+							<span
+								class="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-full text-xs font-bold"
+							>
+								{auth.user?.name.slice(0, 1).toUpperCase()}
+							</span>
+						</Button>
+					{/snippet}
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content align="end" class="w-48">
+					<DropdownMenu.Label class="font-normal">
+						<span class="text-muted-foreground truncate text-xs">{auth.user.email}</span>
+					</DropdownMenu.Label>
+					<DropdownMenu.Separator />
+					<DropdownMenu.Item variant="destructive" onSelect={() => void logout()}>
+						<IconLogout />
+						Keluar
+					</DropdownMenu.Item>
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
 		{/if}
 	</div>
 </header>
-
-{#if menuOpen}
-	<button
-		type="button"
-		class="fixed inset-0 z-10 cursor-default bg-transparent"
-		aria-label="Tutup menu"
-		onclick={() => (menuOpen = false)}
-	></button>
-{/if}

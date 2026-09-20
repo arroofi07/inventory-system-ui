@@ -3,10 +3,12 @@
 	import type { ColumnDef } from '$lib/components/data/column';
 	import Pagination from '$lib/components/data/Pagination.svelte';
 	import FilterBar from '$lib/components/data/FilterBar.svelte';
-	import Badge from '$lib/components/data/Badge.svelte';
 	import StatCard from '$lib/components/data/StatCard.svelte';
 	import Field from '$lib/components/form/Field.svelte';
 	import Combobox from '$lib/components/form/Combobox.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import {
 		daftarBarang,
 		pathTambahBarang,
@@ -36,12 +38,23 @@
 	const bisaTambahStok = $derived(auth.punyaIzin('barang_masuk.buat'));
 
 	const columns: ColumnDef<Row>[] = [
-		{ id: 'kode', header: 'Kode', accessor: 'kode_barang' },
+		{ id: 'kode', header: 'Kode', accessor: 'kode_barang', mono: true },
 		{ id: 'nama', header: 'Nama', accessor: 'nama_item' },
 		{ id: 'brand', header: 'Brand', accessor: 'brand' },
 		{ id: 'stok', header: 'Stok', align: 'right', format: (r) => String(r.stok_tersedia) },
-		{ id: 'status', header: 'Status stok', format: (r) => r.status_stok },
-		{ id: 'aktif', header: 'Aktif', format: (r) => (r.is_active ? 'Ya' : 'Tidak') }
+		{
+			id: 'status',
+			header: 'Status stok',
+			badge: (r) => ({ label: r.status_stok, status: r.status_stok })
+		},
+		{
+			id: 'aktif',
+			header: 'Aktif',
+			badge: (r) => ({
+				label: r.is_active ? 'Aktif' : 'Nonaktif',
+				tone: r.is_active ? 'sukses' : 'netral'
+			})
+		}
 	];
 
 	async function muatRingkas() {
@@ -108,39 +121,29 @@
 		tampilNonaktif = false;
 		page = 1;
 	}
+
+	function onTampilNonaktifChange(v: boolean | 'indeterminate') {
+		tampilNonaktif = v === true;
+		page = 1;
+	}
 </script>
 
 <div class="space-y-4">
 	<header class="flex flex-wrap items-end justify-between gap-3">
 		<div>
-			<h1 class="font-display text-2xl text-ink">Master Barang</h1>
-			<p class="text-sm text-muted">
-				  Katalog SKU. Stok dari saldo ledger resmi (<code class="font-mono text-xs"
+			<h1 class="text-foreground font-display text-2xl tracking-tight">Master Barang</h1>
+			<p class="text-muted-foreground text-sm">
+				Katalog SKU. Stok dari saldo ledger resmi (<code class="font-mono text-xs"
 					>stok_tersedia</code
 				>).
 			</p>
 		</div>
 		<div class="flex flex-wrap items-center gap-2">
 			{#if bisaTambahStok}
-				<a
-					href={resolveAppPath(pathTambahBarang())}
-					class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800"
-				>
-					Tambah barang
-				</a>
+				<Button href={resolveAppPath(pathTambahBarang())}>Tambah barang</Button>
 			{:else if bisaKelola}
-				<a
-					href={resolveAppPath('/barang/baru')}
-					class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800"
-				>
-					Tambah barang
-				</a>
+				<Button href={resolveAppPath('/barang/baru')}>Tambah barang</Button>
 			{/if}
-			<!-- {#if bisaKelola && bisaTambahStok}
-				<a href={resolveAppPath('/barang/baru')} class="text-sm text-brand-700 underline">
-					SKU tanpa stok
-				</a>
-			{/if} -->
 		</div>
 	</header>
 
@@ -157,9 +160,8 @@
 
 	<FilterBar onreset={resetFilter}>
 		<Field label="Cari" forId="barang-q">
-			<input
+			<Input
 				id="barang-q"
-				class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				placeholder="Kode / nama / brand"
 				bind:value={q}
 				oninput={() => {
@@ -182,19 +184,11 @@
 				}}
 			/>
 		</Field>
-		<label class="flex items-center gap-2 pb-2 text-sm text-ink">
-			<input type="checkbox" bind:checked={tampilNonaktif} onchange={() => (page = 1)} />
+		<label class="text-foreground flex items-center gap-2 pb-2 text-sm">
+			<Checkbox checked={tampilNonaktif} onCheckedChange={onTampilNonaktifChange} />
 			Sertakan nonaktif
 		</label>
 	</FilterBar>
-
-	{#if rows.length > 0}
-		<div class="flex flex-wrap gap-2">
-			{#each rows.slice(0, 8) as r (r.id)}
-				<Badge status={r.status_stok} label="{r.kode_barang}: {r.status_stok}" />
-			{/each}
-		</div>
-	{/if}
 
 	<DataTable
 		{columns}
@@ -204,48 +198,23 @@
 		emptyTitle="Tidak ada barang"
 		emptyDescription="Belum ada SKU untuk filter ini."
 		onrowclick={(r) => pergiKe(`/barang/${r.id}`)}
-	/>
-
-	{#if rows.length > 0 && (bisaKelola || bisaTambahStok)}
-		<div class="overflow-hidden rounded-[var(--radius-card)] border border-slate-200 bg-white">
-			<table class="min-w-full text-sm">
-				<thead class="bg-surface text-xs font-semibold uppercase text-muted">
-					<tr>
-						<th class="px-3 py-2 text-left">Aksi cepat</th>
-						<th class="px-3 py-2 text-left">SKU</th>
-					</tr>
-				</thead>
-				<tbody class="divide-y divide-slate-100">
-					{#each rows as r (r.id)}
-						<tr>
-							<td class="px-3 py-2">
-								<div class="flex flex-wrap gap-2">
-									<a class="text-brand-700 underline" href={resolveAppPath(`/barang/${r.id}`)}
-										>Detail</a
-									>
-									{#if bisaTambahStok && r.is_active}
-										<a
-											class="text-brand-700 underline"
-											href={resolveAppPath(pathTambahStok(r.kode_barang))}
-										>
-											Tambah stok
-										</a>
-									{/if}
-									{#if bisaKelola}
-										<a
-											class="text-brand-700 underline"
-											href={resolveAppPath(`/barang/${r.id}/ubah`)}>Ubah</a
-										>
-									{/if}
-								</div>
-							</td>
-							<td class="px-3 py-2 font-mono text-xs">{r.kode_barang}</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</div>
-	{/if}
+	>
+		{#snippet actions(r)}
+			{#if bisaKelola || bisaTambahStok}
+				<Button variant="ghost" size="sm" href={resolveAppPath(`/barang/${r.id}`)}>Detail</Button>
+				{#if bisaTambahStok && r.is_active}
+					<Button variant="ghost" size="sm" href={resolveAppPath(pathTambahStok(r.kode_barang))}>
+						Tambah stok
+					</Button>
+				{/if}
+				{#if bisaKelola}
+					<Button variant="outline" size="sm" href={resolveAppPath(`/barang/${r.id}/ubah`)}>
+						Ubah
+					</Button>
+				{/if}
+			{/if}
+		{/snippet}
+	</DataTable>
 
 	<Pagination
 		page={meta.page}

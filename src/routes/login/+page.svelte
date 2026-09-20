@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 	import { ApiError } from '$lib/api/http';
 	import { pergiKe } from '$lib/nav';
 	import { auth } from '$lib/stores/auth.svelte';
@@ -75,7 +77,7 @@
 
 				<label class="field">
 					<span>Email</span>
-					<input
+					<Input
 						type="email"
 						name="email"
 						autocomplete="username"
@@ -83,13 +85,14 @@
 						placeholder="nama@perusahaan.com"
 						required
 						disabled={submitting}
+						class="login-input"
 					/>
 				</label>
 
 				<label class="field">
 					<span>Password</span>
 					<div class="password-row">
-						<input
+						<Input
 							type={showPassword ? 'text' : 'password'}
 							name="password"
 							autocomplete="current-password"
@@ -97,21 +100,23 @@
 							placeholder="••••••••"
 							required
 							disabled={submitting}
+							class="login-input"
 						/>
-						<button
+						<Button
 							type="button"
+							variant="ghost"
 							class="toggle-pw"
 							onclick={() => (showPassword = !showPassword)}
 							aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
 						>
 							{showPassword ? 'Sembunyi' : 'Lihat'}
-						</button>
+						</Button>
 					</div>
 				</label>
 
-				<button class="submit" type="submit" disabled={submitting}>
+				<Button class="submit" type="submit" disabled={submitting}>
 					{submitting ? 'Memproses…' : 'Masuk'}
-				</button>
+				</Button>
 			</form>
 		</section>
 	</main>
@@ -260,8 +265,9 @@
 		font-weight: 600;
 	}
 
-	.field input {
+	.field :global(.login-input) {
 		width: 100%;
+		height: auto;
 		border: 1px solid color-mix(in oklab, var(--color-brand-800) 16%, #cbd5e1);
 		border-radius: 0.55rem;
 		background: white;
@@ -269,18 +275,20 @@
 		font: inherit;
 		font-weight: 500;
 		color: var(--color-ink);
+		box-shadow: none;
 		transition:
 			border-color 0.15s ease,
 			box-shadow 0.15s ease;
 	}
 
-	.field input:focus {
+	.field :global(.login-input:focus),
+	.field :global(.login-input:focus-visible) {
 		outline: none;
 		border-color: var(--color-brand-600);
 		box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-brand-500) 28%, transparent);
 	}
 
-	.field input:disabled {
+	.field :global(.login-input:disabled) {
 		opacity: 0.65;
 	}
 
@@ -291,23 +299,27 @@
 		align-items: center;
 	}
 
-	.toggle-pw {
+	.password-row :global(.toggle-pw) {
+		height: auto;
 		border: 0;
+		border-radius: 0.55rem;
 		background: transparent;
 		color: var(--color-brand-700);
 		font: inherit;
 		font-size: 0.85rem;
 		font-weight: 600;
 		padding: 0.55rem 0.4rem;
-		cursor: pointer;
+		box-shadow: none;
 	}
 
-	.toggle-pw:hover {
+	.password-row :global(.toggle-pw:hover) {
+		background: transparent;
 		color: var(--color-brand-800);
 	}
 
-	.submit {
+	.panel-form :global(.submit) {
 		margin-top: 0.35rem;
+		height: auto;
 		border: 0;
 		border-radius: 0.55rem;
 		background: linear-gradient(180deg, var(--color-brand-600), var(--color-brand-700));
@@ -315,18 +327,19 @@
 		font: inherit;
 		font-weight: 700;
 		padding: 0.8rem 1rem;
-		cursor: pointer;
+		box-shadow: none;
 		transition:
 			transform 0.15s ease,
 			filter 0.15s ease;
 	}
 
-	.submit:hover:not(:disabled) {
+	.panel-form :global(.submit:hover:not(:disabled)) {
 		filter: brightness(1.05);
 		transform: translateY(-1px);
+		background: linear-gradient(180deg, var(--color-brand-600), var(--color-brand-700));
 	}
 
-	.submit:disabled {
+	.panel-form :global(.submit:disabled) {
 		opacity: 0.7;
 		cursor: wait;
 	}

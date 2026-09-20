@@ -5,18 +5,17 @@
 		message?: string;
 	}
 
-	let {
-		title = 'Tidak ada data',
-		description = '',
-		message
-	}: Props = $props();
+	let { title = 'Tidak ada data', description = '', message }: Props = $props();
 
 	const judul = $derived(message ?? title);
 </script>
 
-<div class="flex flex-col items-center gap-1 px-4 py-12 text-center">
-	<p class="text-sm font-medium text-ink">{judul}</p>
+<div class="flex flex-col items-center gap-2 px-6 py-16 text-center">
+	<div class="bg-primary/10 text-primary mb-1 flex size-12 items-center justify-center rounded-full text-lg font-bold">
+		∅
+	</div>
+	<p class="text-foreground text-sm font-semibold">{judul}</p>
 	{#if description}
-		<p class="max-w-sm text-sm text-muted">{description}</p>
+		<p class="text-muted-foreground max-w-sm text-sm leading-relaxed">{description}</p>
 	{/if}
 </div>

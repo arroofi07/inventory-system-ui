@@ -4,6 +4,8 @@
 	import Pagination from '$lib/components/data/Pagination.svelte';
 	import FilterBar from '$lib/components/data/FilterBar.svelte';
 	import Field from '$lib/components/form/Field.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 	import { daftarBarangMasuk, type BarangMasuk } from '$lib/api/barang-masuk';
 	import type { PageMeta } from '$lib/api/barang';
 	import { ApiError, apiDownload } from '$lib/api/http';
@@ -96,35 +98,12 @@
 		</div>
 		<div class="flex flex-wrap gap-2">
 			{#if bisaEkspor}
-				<button
-					type="button"
-					class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-					onclick={() => void unduhEkspor()}
-				>
-					Ekspor CSV
-				</button>
+				<Button variant="outline" onclick={() => void unduhEkspor()}>Ekspor CSV</Button>
 			{/if}
 			{#if bisaBuat}
-				<button
-					type="button"
-					class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-					onclick={() => void unduhTemplate()}
-				>
-					Template impor
-				</button>
-				<button
-					type="button"
-					class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-					onclick={() => (imporOpen = true)}
-				>
-					Impor CSV
-				</button>
-				<a
-					href={resolveAppPath('/barang-masuk/baru')}
-					class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800"
-				>
-					Tambah stok
-				</a>
+				<Button variant="outline" onclick={() => void unduhTemplate()}>Template impor</Button>
+				<Button variant="outline" onclick={() => (imporOpen = true)}>Impor CSV</Button>
+				<Button href={resolveAppPath('/barang-masuk/baru')}>Tambah stok</Button>
 			{/if}
 		</div>
 	</header>
@@ -136,9 +115,8 @@
 		}}
 	>
 		<Field label="Cari" forId="bm-q">
-			<input
+			<Input
 				id="bm-q"
-				class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				placeholder="Kode / nama / batch / faktur"
 				bind:value={q}
 				oninput={() => (page = 1)}

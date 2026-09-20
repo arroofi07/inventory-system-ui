@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Badge from '$lib/components/data/Badge.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
 	import { detailPromo, hapusPromo, setStatusPromo, type Promo } from '$lib/api/promo';
 	import { ApiError } from '$lib/api/http';
 	import { auth } from '$lib/stores/auth.svelte';
@@ -63,7 +65,9 @@
 </script>
 
 <div class="space-y-4">
-	<a href={resolveAppPath('/promo')} class="text-sm text-brand-700 underline">← Kembali ke daftar</a>
+	<Button variant="link" class="h-auto p-0" href={resolveAppPath('/promo')}>
+		← Kembali ke daftar
+	</Button>
 
 	{#if loading}
 		<p class="text-sm text-muted">Memuat…</p>
@@ -83,55 +87,45 @@
 			{/if}
 		</header>
 
-		<section class="rounded-[var(--radius-card)] border border-slate-200 bg-white p-4 text-sm space-y-1">
-			<p>
-				<span class="text-muted">Periode:</span>
-				{item.tanggal_mulai} → {item.tanggal_berakhir}
-			</p>
-			<p><span class="text-muted">SKU:</span> {item.kode_barang ?? 'Semua'}</p>
-			<p><span class="text-muted">Min qty / amount:</span> {item.min_qty} / {formatRupiah(item.min_amount)}</p>
-			{#if item.tipe_promo === 'buy_x_get_y'}
-				<p><span class="text-muted">Beli/gratis:</span> {item.buy_qty} / {item.get_qty}</p>
-			{:else if item.tipe_promo === 'bonus_qty'}
-				<p><span class="text-muted">Bonus qty:</span> {item.bonus_qty}</p>
-			{:else if item.tipe_promo === 'percentage_discount'}
-				<p><span class="text-muted">Diskon:</span> {item.discount_percentage}%</p>
-			{:else if item.tipe_promo === 'fixed_discount'}
-				<p><span class="text-muted">Diskon:</span> {formatRupiah(item.discount_amount)}</p>
-			{/if}
-			{#if item.max_applications}
-				<p><span class="text-muted">Max applications:</span> {item.max_applications}</p>
-			{/if}
-			{#if item.deskripsi}
-				<p class="mt-2">{item.deskripsi}</p>
-			{/if}
-		</section>
+		<Card.Root class="gap-0 border border-primary/20 bg-white p-4 shadow-none ring-0">
+			<Card.Content class="space-y-1 p-0 text-sm">
+				<p>
+					<span class="text-muted">Periode:</span>
+					{item.tanggal_mulai} → {item.tanggal_berakhir}
+				</p>
+				<p><span class="text-muted">SKU:</span> {item.kode_barang ?? 'Semua'}</p>
+				<p>
+					<span class="text-muted">Min qty / amount:</span>
+					{item.min_qty} / {formatRupiah(item.min_amount)}
+				</p>
+				{#if item.tipe_promo === 'buy_x_get_y'}
+					<p><span class="text-muted">Beli/gratis:</span> {item.buy_qty} / {item.get_qty}</p>
+				{:else if item.tipe_promo === 'bonus_qty'}
+					<p><span class="text-muted">Bonus qty:</span> {item.bonus_qty}</p>
+				{:else if item.tipe_promo === 'percentage_discount'}
+					<p><span class="text-muted">Diskon:</span> {item.discount_percentage}%</p>
+				{:else if item.tipe_promo === 'fixed_discount'}
+					<p><span class="text-muted">Diskon:</span> {formatRupiah(item.discount_amount)}</p>
+				{/if}
+				{#if item.max_applications}
+					<p><span class="text-muted">Max applications:</span> {item.max_applications}</p>
+				{/if}
+				{#if item.deskripsi}
+					<p class="mt-2">{item.deskripsi}</p>
+				{/if}
+			</Card.Content>
+		</Card.Root>
 
 		{#if bisaKelola || bisaHapus}
 			<div class="flex flex-wrap gap-2">
 				{#if bisaKelola}
-					<a
-						href={resolveAppPath(`/promo/${item.id}/ubah`)}
-						class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white"
-					>
-						Ubah
-					</a>
-					<button
-						type="button"
-						class="rounded-lg border border-slate-300 px-4 py-2 text-sm"
-						onclick={toggleAktif}
-					>
+					<Button href={resolveAppPath(`/promo/${item.id}/ubah`)}>Ubah</Button>
+					<Button variant="outline" type="button" onclick={toggleAktif}>
 						{item.is_active ? 'Nonaktifkan' : 'Aktifkan'}
-					</button>
+					</Button>
 				{/if}
 				{#if bisaHapus}
-					<button
-						type="button"
-						class="rounded-lg border border-red-300 px-4 py-2 text-sm text-bahaya"
-						onclick={konfirmasiHapus}
-					>
-						Hapus
-					</button>
+					<Button variant="destructive" type="button" onclick={konfirmasiHapus}>Hapus</Button>
 				{/if}
 			</div>
 		{/if}

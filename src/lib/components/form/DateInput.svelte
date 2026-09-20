@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { Input } from '$lib/components/ui/input/index.js';
+
 	let { value = $bindable('') }: { value?: string } = $props();
 </script>
 
-<input class="rounded border border-slate-300 px-2 py-1.5 text-sm" type="date" bind:value />
+<Input type="date" class="w-auto" bind:value />

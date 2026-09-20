@@ -1,45 +1,47 @@
+import { toast } from 'svelte-sonner';
+
 export type ToastTone = 'info' | 'sukses' | 'peringatan' | 'bahaya';
 
+/** @deprecated daftar toast kini dikelola svelte-sonner. */
 export type ToastItem = {
-	id: number;
+	id: string | number;
 	message: string;
 	tone: ToastTone;
 };
 
-let items = $state<ToastItem[]>([]);
-let seq = 0;
-const timers = new Map<number, ReturnType<typeof setTimeout>>();
-
-export function getToasts(): ToastItem[] {
-	return items;
-}
-
-/** @deprecated gunakan getToasts — tetap ada untuk kompatibilitas singkat. */
-export function getToast(): string | null {
-	return items[0]?.message ?? null;
-}
-
+/** Tetap ada agar call site lama (`showToast(msg, 'sukses')`) tidak perlu diubah. */
 export function showToast(message: string, tone: ToastTone = 'info', durationMs = 4000) {
-	const id = ++seq;
-	items = [...items, { id, message, tone }];
-	if (durationMs > 0) {
-		const t = setTimeout(() => dismissToast(id), durationMs);
-		timers.set(id, t);
+	const opts = { duration: durationMs };
+	switch (tone) {
+		case 'sukses':
+			return toast.success(message, opts);
+		case 'bahaya':
+			return toast.error(message, opts);
+		case 'peringatan':
+			return toast.warning(message, opts);
+		case 'info':
+			return toast.info(message, opts);
+		default: {
+			const _exhaustive: never = tone;
+			return toast(message, opts);
+		}
 	}
-	return id;
 }
 
-export function dismissToast(id: number) {
-	const t = timers.get(id);
-	if (t) {
-		clearTimeout(t);
-		timers.delete(id);
-	}
-	items = items.filter((x) => x.id !== id);
+export function dismissToast(id?: string | number) {
+	toast.dismiss(id);
 }
 
 export function clearToast() {
-	for (const t of timers.values()) clearTimeout(t);
-	timers.clear();
-	items = [];
+	toast.dismiss();
+}
+
+/** @deprecated tidak tersedia dengan Sonner. */
+export function getToasts(): ToastItem[] {
+	return [];
+}
+
+/** @deprecated tidak tersedia dengan Sonner. */
+export function getToast(): string | null {
+	return null;
 }

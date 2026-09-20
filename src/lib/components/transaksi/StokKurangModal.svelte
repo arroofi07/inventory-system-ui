@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Button } from '$lib/components/ui/button/index.js';
 	import type { CekStokItem } from '$lib/api/transaksi';
 
 	interface Props {
@@ -32,17 +33,17 @@
 		aria-modal="true"
 		aria-labelledby="stok-kurang-title"
 	>
-		<div class="w-full max-h-[90dvh] overflow-auto rounded-t-2xl bg-white p-4 shadow-lg sm:max-w-lg sm:rounded-lg">
-			<h2 id="stok-kurang-title" class="text-base font-semibold text-slate-900">Stok tidak cukup</h2>
-			<p class="mt-1 text-sm text-slate-600">
+		<div class="w-full max-h-[90dvh] overflow-auto rounded-t-2xl bg-card p-4 shadow-lg sm:max-w-lg sm:rounded-2xl">
+			<h2 id="stok-kurang-title" class="text-base font-semibold">Stok tidak cukup</h2>
+			<p class="mt-1 text-sm text-muted-foreground">
 				Beberapa SKU kekurangan stok. Cek ini bersifat sementara — jaminan hanya saat approval.
 			</p>
 
 			<ul class="mt-3 max-h-56 space-y-2 overflow-y-auto text-sm">
 				{#each kurang as row (row.kode_item + String(row.qty_diminta))}
-					<li class="rounded border border-amber-200 bg-amber-50 px-3 py-2">
-						<div class="font-medium text-slate-900">{row.nama_item}</div>
-						<div class="text-slate-600">
+					<li class="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2">
+						<div class="font-medium">{row.nama_item}</div>
+						<div class="text-muted-foreground">
 							{row.kode_item}: diminta {row.qty_diminta}, tersedia {row.stok_tersedia}
 						</div>
 					</li>
@@ -50,30 +51,31 @@
 			</ul>
 
 			{#if catatan}
-				<p class="mt-3 text-xs text-slate-500">{catatan}</p>
+				<p class="mt-3 text-xs text-muted-foreground">{catatan}</p>
 			{/if}
 
 			<div class="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
-				<button
+				<Button
 					type="button"
-					class="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm sm:min-h-0 sm:py-1.5"
+					variant="outline"
+					class="min-h-11 sm:min-h-0"
 					onclick={() => {
 						open = false;
 						onkurangi?.();
 					}}
 				>
 					Kurangi qty
-				</button>
-				<button
+				</Button>
+				<Button
 					type="button"
-					class="min-h-11 rounded-lg bg-slate-900 px-3 py-2 text-sm text-white sm:min-h-0 sm:py-1.5"
+					class="min-h-11 sm:min-h-0"
 					onclick={() => {
 						open = false;
 						onlanjut?.();
 					}}
 				>
 					Lanjut dengan risiko
-				</button>
+				</Button>
 			</div>
 		</div>
 	</div>

@@ -5,6 +5,8 @@
 	import FilterBar from '$lib/components/data/FilterBar.svelte';
 	import Field from '$lib/components/form/Field.svelte';
 	import Combobox from '$lib/components/form/Combobox.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 	import { daftarTransaksi, type TransaksiListItem } from '$lib/api/transaksi';
 	import type { PageMeta } from '$lib/api/barang';
 	import { formatRupiah } from '$lib/domain/format';
@@ -126,10 +128,7 @@
 			</p>
 		</div>
 		{#if bisaBuat}
-			<a
-				href={resolveAppPath('/transaksi/baru')}
-				class="rounded bg-slate-900 px-4 py-2 text-sm text-white">Transaksi baru</a
-			>
+			<Button href={resolveAppPath('/transaksi/baru')}>Transaksi baru</Button>
 		{/if}
 	</header>
 
@@ -139,12 +138,7 @@
 
 	<FilterBar onreset={resetFilter}>
 		<Field label="Cari" forId="q">
-			<input
-				id="q"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-				placeholder="Kode/nama pelanggan, ID, no…"
-				bind:value={q}
-			/>
+			<Input id="q" placeholder="Kode/nama pelanggan, ID, no…" bind:value={q} />
 		</Field>
 		<Field label="Status approval" forId="sa">
 			<Combobox id="sa" options={statusOpts} bind:value={statusApproval} />
@@ -153,10 +147,10 @@
 			<Combobox id="sb" options={bayarOpts} bind:value={statusBayar} />
 		</Field>
 		<Field label="Dari tanggal" forId="df">
-			<input id="df" type="date" class="w-full rounded-lg border px-3 py-2 text-sm" bind:value={dateFrom} />
+			<Input id="df" type="date" bind:value={dateFrom} />
 		</Field>
 		<Field label="Sampai" forId="dt">
-			<input id="dt" type="date" class="w-full rounded-lg border px-3 py-2 text-sm" bind:value={dateTo} />
+			<Input id="dt" type="date" bind:value={dateTo} />
 		</Field>
 	</FilterBar>
 
@@ -176,14 +170,11 @@
 
 	{#if bisaBuat}
 		<div
-			class="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden"
+			class="fixed inset-x-0 bottom-0 z-20 border-t border-primary/20 bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden"
 		>
-			<a
-				href={resolveAppPath('/transaksi/baru')}
-				class="flex min-h-11 items-center justify-center rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white"
-			>
+			<Button href={resolveAppPath('/transaksi/baru')} class="flex min-h-11 w-full font-semibold">
 				Transaksi baru
-			</a>
+			</Button>
 		</div>
 	{/if}
 </div>

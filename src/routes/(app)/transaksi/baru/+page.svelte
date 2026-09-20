@@ -7,6 +7,10 @@
 	import StokKurangModal from '$lib/components/transaksi/StokKurangModal.svelte';
 	import RiwayatOutletModal from '$lib/components/transaksi/RiwayatOutletModal.svelte';
 	import InfoBatchTerpilih from '$lib/components/transaksi/InfoBatchTerpilih.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
 	import { daftarBarang, batchTersedia, type BatchTersediaItem } from '$lib/api/barang';
 	import { daftarPelanggan, detailPelanggan, type Pelanggan } from '$lib/api/pelanggan';
 	import { daftarPromo } from '$lib/api/promo';
@@ -395,9 +399,13 @@
 </script>
 
 <div class="space-y-4 pb-24 md:pb-0">
-	<a href={resolveAppPath('/transaksi')} class="inline-flex min-h-11 items-center text-sm text-brand-700 underline md:min-h-0"
-		>← Daftar transaksi</a
+	<Button
+		variant="link"
+		class="inline-flex h-auto min-h-11 p-0 md:min-h-0"
+		href={resolveAppPath('/transaksi')}
 	>
+		← Daftar transaksi
+	</Button>
 	<header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
 		<div class="hidden md:block">
 			<h1 class="font-display text-2xl text-ink">Transaksi baru</h1>
@@ -409,11 +417,13 @@
 			Angka resmi dari pratinjau server. Estimasi browser hanya bantuan.
 		</p>
 		{#if pelangganKode}
-			<button
-				type="button"
-				class="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm sm:min-h-0 sm:py-1.5"
-				onclick={() => (riwayatOpen = true)}>Riwayat outlet</button
+			<Button
+				variant="outline"
+				class="min-h-11 sm:min-h-0"
+				onclick={() => (riwayatOpen = true)}
 			>
+				Riwayat outlet
+			</Button>
 		{/if}
 	</header>
 
@@ -428,27 +438,13 @@
 			/>
 		</Field>
 		<Field label="Channel" forId="ch">
-			<input
-				id="ch"
-				class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm"
-				value={channel}
-				readonly
-			/>
+			<Input id="ch" class="bg-background" value={channel} readonly />
 		</Field>
 		<Field label="Area" required forId="area" error={errors.area}>
-			<input
-				id="area"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-				bind:value={area}
-			/>
+			<Input id="area" bind:value={area} />
 		</Field>
 		<Field label="Tanggal" required forId="tgl">
-			<input
-				id="tgl"
-				type="date"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-				bind:value={tanggal}
-			/>
+			<Input id="tgl" type="date" bind:value={tanggal} />
 		</Field>
 		<Field label="Disc1 global %" forId="d1g">
 			<PercentInput id="d1g" class="w-full" bind:value={disc1G} />
@@ -460,16 +456,20 @@
 
 	<section class="space-y-4">
 		<div class="flex items-center justify-between">
-			<h2 class="text-sm font-semibold text-slate-800">Tambah barang</h2>
-			<button type="button" class="min-h-11 px-1 text-sm text-brand-700 underline md:min-h-0" onclick={tambahBaris}
-				>+ Baris item</button
+			<h2 class="text-sm font-semibold text-foreground">Tambah barang</h2>
+			<Button
+				variant="link"
+				class="h-auto min-h-11 p-0 md:min-h-0"
+				onclick={tambahBaris}
 			>
+				+ Baris item
+			</Button>
 		</div>
 
 		{#each items as row, idx (row.key)}
 			{@const batchInfo = batchAktif(row)}
 			{@const ch = infoChannel(channel)}
-			<div class="rounded-xl border-2 border-dashed border-emerald-200 bg-emerald-50/30 p-4 space-y-3">
+			<div class="space-y-3 rounded-xl border-2 border-dashed border-emerald-200 bg-emerald-50/30 p-4">
 				<header class="space-y-1">
 					<h3 class="flex items-center gap-2 font-semibold text-emerald-900">
 						<span class="text-lg leading-none" aria-hidden="true">+</span>
@@ -504,14 +504,14 @@
 					</div>
 					<div class="lg:col-span-4">
 						<Field label="Harga auto" forId={`hrg-${idx}`}>
-							<input
+							<Input
 								id={`hrg-${idx}`}
-								class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-mono text-sm tabular-nums"
+								class="font-mono tabular-nums"
 								value={row.harga && row.harga !== '0.00'
 									? formatRupiah(row.harga, { tanpaSimbol: true })
 									: ''}
 								readonly
-								tabindex="-1"
+								tabindex={-1}
 							/>
 							{#if batchInfo && channel}
 								<p class="mt-1 flex flex-wrap items-center gap-2 text-xs text-emerald-800">
@@ -533,47 +533,61 @@
 
 				<div class="flex flex-wrap items-center gap-2">
 					{#if row.batches.length > 1}
-						<label class="flex items-center gap-2 text-xs text-slate-600">
-							<span>Ganti batch:</span>
-							<select
-								class="rounded border border-slate-300 bg-white px-2 py-1 text-xs"
-								value={row.barang_masuk_id ?? ''}
-								onchange={(e) => pilihBatch(idx, (e.currentTarget as HTMLSelectElement).value)}
+						{@const batchVal = row.barang_masuk_id != null ? String(row.barang_masuk_id) : ''}
+						{@const batchOpts = [
+							{ value: '', label: `Otomatis ${row.metodeAlokasi}` },
+							...row.batches.map((b) => ({
+								value: String(b.barang_masuk_id),
+								label: `${b.no_batch} · sisa ${b.qty_tersedia}`
+							}))
+						]}
+						{@const batchLabel =
+							batchOpts.find((o) => o.value === batchVal)?.label ??
+							`Otomatis ${row.metodeAlokasi}`}
+						<label class="flex min-w-0 flex-wrap items-center gap-2 text-xs text-muted-foreground">
+							<span class="shrink-0">Ganti batch:</span>
+							<Select.Root
+								type="single"
+								value={batchVal}
+								onValueChange={(v) => pilihBatch(idx, v)}
 							>
-								<option value="">Otomatis {row.metodeAlokasi}</option>
-								{#each row.batches as b (b.barang_masuk_id)}
-									<option value={b.barang_masuk_id}>
-										{b.no_batch} · sisa {b.qty_tersedia}
-									</option>
-								{/each}
-							</select>
+								<Select.Trigger class="h-7 min-w-[12rem] text-xs">
+									{batchLabel}
+								</Select.Trigger>
+								<Select.Content>
+									{#each batchOpts as opsi (opsi.value || '__auto__')}
+										<Select.Item value={opsi.value} label={opsi.label}>{opsi.label}</Select.Item>
+									{/each}
+								</Select.Content>
+							</Select.Root>
 						</label>
 					{/if}
 					{#if batchInfo}
-						<button
-							type="button"
-							class="ml-auto rounded-lg border border-sky-300 bg-sky-50 px-3 py-1.5 text-xs font-medium text-sky-800"
+						<Button
+							variant="outline"
+							size="sm"
+							class="ml-auto border-sky-300 bg-sky-50 text-sky-800 hover:bg-sky-100"
 							onclick={() => {
 								row.tampilkanInfo = !row.tampilkanInfo;
 								items = [...items];
 							}}
 						>
 							{row.tampilkanInfo ? 'Sembunyikan info' : 'Tampilkan info'}
-						</button>
+						</Button>
 					{/if}
 				</div>
 
 				{#if batchInfo && row.tampilkanInfo}
 					<InfoBatchTerpilih
 						batch={batchInfo}
-						channel={channel}
+						{channel}
 						metodeAlokasi={row.metodeAlokasi}
 						satuan={row.satuan}
 					/>
 				{/if}
 
-				<details class="rounded-lg border border-slate-200 bg-white/80 p-3">
-					<summary class="cursor-pointer text-xs font-medium text-slate-700">
+				<details class="rounded-lg border border-primary/20 bg-white/80 p-3">
+					<summary class="cursor-pointer text-xs font-medium text-foreground">
 						Diskon & promo baris
 					</summary>
 					<div class="mt-3 grid gap-2 md:grid-cols-3 lg:grid-cols-6">
@@ -614,9 +628,13 @@
 				</details>
 
 				{#if items.length > 1}
-					<button type="button" class="text-xs text-red-600 underline" onclick={() => hapusBaris(idx)}
-						>Hapus baris</button
+					<Button
+						variant="link"
+						class="h-auto p-0 text-xs text-destructive"
+						onclick={() => hapusBaris(idx)}
 					>
+						Hapus baris
+					</Button>
 				{/if}
 			</div>
 		{/each}
@@ -627,21 +645,21 @@
 			<CurrencyInput id="bayar" bind:value={nominalDibayar} />
 		</Field>
 		<Field label="Jatuh tempo" forId="tjt">
-			<input id="tjt" type="date" class="w-full rounded-lg border px-3 py-2 text-sm" bind:value={tjt} />
+			<Input id="tjt" type="date" bind:value={tjt} />
 		</Field>
 		<Field label="Keterangan bayar" forId="ket">
-			<input id="ket" class="w-full rounded-lg border px-3 py-2 text-sm" bind:value={ketBayar} />
+			<Input id="ket" bind:value={ketBayar} />
 		</Field>
 	</section>
 
-	<section class="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+	<Card.Root class="gap-0 border bg-primary/5 p-4 text-sm shadow-none ring-0">
 		<div class="grid gap-2 sm:grid-cols-2">
 			<div>
-				<p class="font-medium text-slate-700">Estimasi browser (kasar)</p>
+				<p class="font-medium text-foreground">Estimasi browser (kasar)</p>
 				<p>Total akhir ≈ {formatRupiah(kasar.totalAkhir)}</p>
 			</div>
 			<div>
-				<p class="font-medium text-slate-700">Pratinjau server</p>
+				<p class="font-medium text-foreground">Pratinjau server</p>
 				{#if pratinjau}
 					<p>Total (DPP) {formatRupiah(pratinjau.ringkasan.total)}</p>
 					<p>PPN {formatRupiah(pratinjau.ringkasan.ppn_nominal)}</p>
@@ -652,32 +670,31 @@
 						<p class="text-amber-700">Ada baris stok kurang</p>
 					{/if}
 				{:else}
-					<p class="text-slate-500">Belum dijalankan</p>
+					<p class="text-primary/70">Belum dijalankan</p>
 				{/if}
 			</div>
 		</div>
-	</section>
+	</Card.Root>
 
 	<div
-		class="sticky bottom-0 z-10 -mx-4 mt-4 border-t border-slate-200 bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:mx-0 md:border-0 md:bg-transparent md:p-0"
+		class="sticky bottom-0 z-10 -mx-4 mt-4 border-t border-primary/20 bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:mx-0 md:border-0 md:bg-transparent md:p-0"
 	>
 		<div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-			<button
-				type="button"
-				class="min-h-11 rounded-lg border border-slate-300 px-4 py-2 text-sm sm:min-h-0"
+			<Button
+				variant="outline"
+				class="min-h-11 sm:min-h-0"
 				disabled={loadingPratinjau || menyimpan}
 				onclick={() => void jalankanPratinjau()}
 			>
 				{loadingPratinjau ? 'Menghitung…' : 'Pratinjau'}
-			</button>
-			<button
-				type="button"
-				class="min-h-11 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 sm:min-h-0"
+			</Button>
+			<Button
+				class="min-h-11 font-semibold sm:min-h-0"
 				disabled={menyimpan || loadingPratinjau}
 				onclick={() => void sebelumSubmit(() => void simpan())}
 			>
 				{menyimpan ? 'Menyimpan…' : 'Simpan pending'}
-			</button>
+			</Button>
 		</div>
 	</div>
 </div>

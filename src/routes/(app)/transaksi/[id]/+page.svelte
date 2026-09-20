@@ -4,6 +4,10 @@
 	import AsyncCombobox from '$lib/components/form/AsyncCombobox.svelte';
 	import CurrencyInput from '$lib/components/form/CurrencyInput.svelte';
 	import NumberInput from '$lib/components/form/NumberInput.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Table from '$lib/components/ui/table/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
 	import {
 		detailTransaksi,
 		tambahItemsTransaksi,
@@ -41,6 +45,22 @@
 				milikSaya
 		)
 	);
+
+	const batchSelectOptions = $derived([
+		{ value: '', label: 'FEFO' },
+		...batches.map((b) => ({ value: String(b.id), label: b.label }))
+	]);
+	const batchSelectValue = $derived(batchId != null ? String(batchId) : '');
+	const batchSelectLabel = $derived(
+		batchSelectOptions.find((o) => o.value === batchSelectValue)?.label ?? 'FEFO'
+	);
+
+	function onBatchSelectChange(v: string) {
+		const n = Number(v);
+		batchId = n || null;
+		const b = batches.find((x) => x.id === n);
+		if (b) harga = b.harga;
+	}
 
 	async function muat() {
 		loading = true;
@@ -146,14 +166,18 @@
 </script>
 
 <div class="space-y-4">
-	<a href={resolveAppPath('/transaksi')} class="inline-flex min-h-11 items-center text-sm text-brand-700 underline md:min-h-0"
-		>← Daftar transaksi</a
+	<Button
+		variant="link"
+		class="inline-flex h-auto min-h-11 p-0 md:min-h-0"
+		href={resolveAppPath('/transaksi')}
 	>
+		← Daftar transaksi
+	</Button>
 
 	{#if loading}
-		<p class="text-sm text-slate-500">Memuat…</p>
+		<p class="text-sm text-primary/70">Memuat…</p>
 	{:else if !trx}
-		<p class="text-sm text-slate-500">Transaksi tidak ditemukan.</p>
+		<p class="text-sm text-primary/70">Transaksi tidak ditemukan.</p>
 	{:else}
 		<header class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
 			<div class="min-w-0">
@@ -169,28 +193,29 @@
 			</div>
 			<div class="flex flex-col gap-2 text-sm sm:items-end sm:text-right">
 				<p class="flex flex-wrap gap-1">
-					<span class="rounded bg-slate-100 px-2 py-0.5">{trx.status_approval}</span>
-					<span class="rounded bg-slate-100 px-2 py-0.5">{trx.status_pembayaran}</span>
+					<span class="rounded bg-primary/10 px-2 py-0.5">{trx.status_approval}</span>
+					<span class="rounded bg-primary/10 px-2 py-0.5">{trx.status_pembayaran}</span>
 				</p>
 				<p class="font-semibold">{formatRupiah(trx.total_akhir)}</p>
 				{#if trx.status_approval === 'approved' && auth.punyaIzin('faktur.cetak')}
 					<div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
-						<a
-							class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 px-3 text-sm text-brand-800 sm:min-h-0 sm:border-0 sm:px-0 sm:underline"
+						<Button
+							variant="outline"
+							class="min-h-11 sm:min-h-0 sm:border-0 sm:px-0 sm:underline"
 							href={resolveAppPath(`/faktur/${trx.id}`)}
 							target="_blank"
 							rel="noopener"
 						>
 							Cetak faktur
-						</a>
-						<button
-							type="button"
-							class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 px-3 text-sm text-brand-800 disabled:opacity-60 sm:min-h-0 sm:border-0 sm:px-0 sm:underline"
+						</Button>
+						<Button
+							variant="outline"
+							class="min-h-11 sm:min-h-0 sm:border-0 sm:px-0 sm:underline"
 							onclick={() => void unduhPdf()}
 							disabled={mengunduhPdf}
 						>
 							{mengunduhPdf ? 'Mengunduh…' : 'Unduh PDF'}
-						</button>
+						</Button>
 					</div>
 				{/if}
 			</div>
@@ -198,53 +223,53 @@
 
 		<section class="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
 			<div>
-				<p class="text-slate-500">Area</p>
+				<p class="text-primary/70">Area</p>
 				<p>{trx.area}</p>
 			</div>
 			<div>
-				<p class="text-slate-500">Alamat</p>
+				<p class="text-primary/70">Alamat</p>
 				<p class="break-words">{trx.alamat ?? '—'}</p>
 			</div>
 			<div>
-				<p class="text-slate-500">DPP / PPN</p>
+				<p class="text-primary/70">DPP / PPN</p>
 				<p>{formatRupiah(trx.total)} + {formatRupiah(trx.ppn_nominal)}</p>
 			</div>
 			<div>
-				<p class="text-slate-500">Qty ditagih / keluar</p>
+				<p class="text-primary/70">Qty ditagih / keluar</p>
 				<p>{trx.total_qty_ditagih ?? '—'} / {trx.total_qty_keluar ?? '—'}</p>
 			</div>
 		</section>
 
 		<section class="space-y-2 md:hidden">
 			{#each trx.items ?? [] as it (it.id ?? it.kode_item + String(it.urutan))}
-				<article class="rounded-lg border border-slate-200 bg-white p-3 text-sm">
+				<Card.Root class="gap-0 border p-3 text-sm shadow-none ring-0">
 					<p class="font-medium">{it.nama_item}</p>
-					<p class="text-xs text-slate-500">{it.kode_item}</p>
+					<p class="text-xs text-primary/70">{it.kode_item}</p>
 					<dl class="mt-2 space-y-1">
 						<div class="flex justify-between gap-3">
-							<dt class="text-slate-500">Jumlah</dt>
+							<dt class="text-primary/70">Jumlah</dt>
 							<dd>{it.jumlah}</dd>
 						</div>
 						<div class="flex justify-between gap-3">
-							<dt class="text-slate-500">Qty keluar</dt>
+							<dt class="text-primary/70">Qty keluar</dt>
 							<dd>{it.total_qty_keluar}</dd>
 						</div>
 						<div class="flex justify-between gap-3">
-							<dt class="text-slate-500">Harga</dt>
+							<dt class="text-primary/70">Harga</dt>
 							<dd>{formatRupiah(it.harga)}</dd>
 						</div>
 						<div class="flex justify-between gap-3">
-							<dt class="text-slate-500">Setelah disc</dt>
+							<dt class="text-primary/70">Setelah disc</dt>
 							<dd>{formatRupiah(it.total_after_disc ?? '0')}</dd>
 						</div>
 						{#if it.batch_number || it.promo_diterapkan?.length}
 							<div class="flex justify-between gap-3">
-								<dt class="text-slate-500">Batch / promo</dt>
-								<dd class="text-right text-xs text-slate-600">
+								<dt class="text-primary/70">Batch / promo</dt>
+								<dd class="text-right text-xs text-muted-foreground">
 									{#if it.batch_number}{it.batch_number}{/if}
 									{#if it.promo_diterapkan?.length}
 										<div>
-											{#each it.promo_diterapkan as p}
+											{#each it.promo_diterapkan as p (p.kode_promo)}
 												{p.kode_promo}{#if p.qty_bonus} (+{p.qty_bonus}){/if}
 											{/each}
 										</div>
@@ -253,57 +278,58 @@
 							</div>
 						{/if}
 					</dl>
-				</article>
+				</Card.Root>
 			{/each}
 		</section>
 
-		<section class="hidden overflow-x-auto rounded-lg border border-slate-200 md:block">
-			<table class="min-w-full text-left text-sm">
-				<thead class="bg-slate-50 text-slate-600">
-					<tr>
-						<th class="px-3 py-2">Item</th>
-						<th class="px-3 py-2">Jumlah</th>
-						<th class="px-3 py-2">Qty keluar</th>
-						<th class="px-3 py-2">Harga</th>
-						<th class="px-3 py-2">Setelah disc</th>
-						<th class="px-3 py-2">Batch / promo</th>
-					</tr>
-				</thead>
-				<tbody>
+		<section class="hidden overflow-hidden rounded-[var(--radius-card)] border border-primary/20 md:block">
+			<Table.Root>
+				<Table.Header>
+					<Table.Row class="hover:bg-transparent">
+						<Table.Head class="px-3 py-2">Item</Table.Head>
+						<Table.Head class="px-3 py-2">Jumlah</Table.Head>
+						<Table.Head class="px-3 py-2">Qty keluar</Table.Head>
+						<Table.Head class="px-3 py-2">Harga</Table.Head>
+						<Table.Head class="px-3 py-2">Setelah disc</Table.Head>
+						<Table.Head class="px-3 py-2">Batch / promo</Table.Head>
+					</Table.Row>
+				</Table.Header>
+				<Table.Body>
 					{#each trx.items ?? [] as it (it.id ?? it.kode_item + String(it.urutan))}
-						<tr class="border-t border-slate-100">
-							<td class="px-3 py-2">
+						<Table.Row>
+							<Table.Cell class="px-3 py-2">
 								<div class="font-medium">{it.nama_item}</div>
-								<div class="text-xs text-slate-500">{it.kode_item}</div>
-							</td>
-							<td class="px-3 py-2">{it.jumlah}</td>
-							<td class="px-3 py-2">{it.total_qty_keluar}</td>
-							<td class="px-3 py-2">{formatRupiah(it.harga)}</td>
-							<td class="px-3 py-2">{formatRupiah(it.total_after_disc ?? '0')}</td>
-							<td class="px-3 py-2 text-xs text-slate-600">
+								<div class="text-xs text-primary/70">{it.kode_item}</div>
+							</Table.Cell>
+							<Table.Cell class="px-3 py-2">{it.jumlah}</Table.Cell>
+							<Table.Cell class="px-3 py-2">{it.total_qty_keluar}</Table.Cell>
+							<Table.Cell class="px-3 py-2">{formatRupiah(it.harga)}</Table.Cell>
+							<Table.Cell class="px-3 py-2">{formatRupiah(it.total_after_disc ?? '0')}</Table.Cell>
+							<Table.Cell class="px-3 py-2 text-xs text-muted-foreground">
 								{#if it.batch_number}{it.batch_number}{/if}
 								{#if it.promo_diterapkan?.length}
 									<div>
-										{#each it.promo_diterapkan as p}
+										{#each it.promo_diterapkan as p (p.kode_promo)}
 											{p.kode_promo}{#if p.qty_bonus} (+{p.qty_bonus}){/if}
 										{/each}
 									</div>
 								{/if}
-							</td>
-						</tr>
+							</Table.Cell>
+						</Table.Row>
 					{/each}
-				</tbody>
-			</table>
+				</Table.Body>
+			</Table.Root>
 		</section>
 
 		{#if tampilTambah}
-			<div class="rounded-lg border border-dashed border-slate-300 p-3">
+			<Card.Root class="gap-0 border border-dashed p-3 shadow-none ring-0">
 				{#if !formTambahOpen}
-					<button
-						type="button"
-						class="min-h-11 w-full rounded-lg bg-slate-900 px-3 py-2 text-sm text-white sm:w-auto sm:min-h-0"
-						onclick={() => (formTambahOpen = true)}>Tambah item</button
+					<Button
+						class="min-h-11 w-full sm:w-auto sm:min-h-0"
+						onclick={() => (formTambahOpen = true)}
 					>
+						Tambah item
+					</Button>
 				{:else}
 					<div class="grid gap-3 md:grid-cols-4">
 						<Field label="Produk" required forId="add-brg">
@@ -316,22 +342,20 @@
 							/>
 						</Field>
 						<Field label="Batch" forId="add-batch">
-							<select
-								id="add-batch"
-								class="w-full rounded-lg border px-3 py-2 text-sm"
-								value={batchId ?? ''}
-								onchange={(e) => {
-									const v = Number((e.currentTarget as HTMLSelectElement).value);
-									batchId = v || null;
-									const b = batches.find((x) => x.id === v);
-									if (b) harga = b.harga;
-								}}
+							<Select.Root
+								type="single"
+								value={batchSelectValue}
+								onValueChange={onBatchSelectChange}
 							>
-								<option value="">FEFO</option>
-								{#each batches as b (b.id)}
-									<option value={b.id}>{b.label}</option>
-								{/each}
-							</select>
+								<Select.Trigger id="add-batch" class="w-full">
+									{batchSelectLabel}
+								</Select.Trigger>
+								<Select.Content>
+									{#each batchSelectOptions as opsi (opsi.value || '__fefo__')}
+										<Select.Item value={opsi.value} label={opsi.label}>{opsi.label}</Select.Item>
+									{/each}
+								</Select.Content>
+							</Select.Root>
 						</Field>
 						<Field label="Qty" forId="add-qty">
 							<NumberInput id="add-qty" min={1} bind:value={qty} />
@@ -341,22 +365,23 @@
 						</Field>
 					</div>
 					<div class="mt-3 flex flex-col gap-2 sm:flex-row">
-						<button
-							type="button"
-							class="min-h-11 rounded-lg bg-slate-900 px-3 py-2 text-sm text-white disabled:opacity-50 sm:min-h-0 sm:py-1.5"
+						<Button
+							class="min-h-11 sm:min-h-0"
 							disabled={menyimpan}
 							onclick={() => void simpanTambah()}
 						>
 							{menyimpan ? 'Menyimpan…' : 'Simpan item'}
-						</button>
-						<button
-							type="button"
-							class="min-h-11 rounded-lg border px-3 py-2 text-sm sm:min-h-0 sm:py-1.5"
-							onclick={() => (formTambahOpen = false)}>Batal</button
+						</Button>
+						<Button
+							variant="outline"
+							class="min-h-11 sm:min-h-0"
+							onclick={() => (formTambahOpen = false)}
 						>
+							Batal
+						</Button>
 					</div>
 				{/if}
-			</div>
+			</Card.Root>
 		{/if}
 	{/if}
 </div>

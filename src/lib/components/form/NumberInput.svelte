@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Input } from '$lib/components/ui/input/index.js';
 	import { isZeroNumeric } from '$lib/domain/format';
 
 	interface Props {
@@ -25,7 +26,7 @@
 		required = false,
 		disabled = false,
 		placeholder,
-		class: className = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm',
+		class: className = 'w-full',
 		onchange
 	}: Props = $props();
 
@@ -40,7 +41,7 @@
 	}
 </script>
 
-<input
+<Input
 	{id}
 	{name}
 	{min}

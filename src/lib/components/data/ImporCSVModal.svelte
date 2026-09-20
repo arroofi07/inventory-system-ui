@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Modal from '$lib/components/feedback/Modal.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 	import { ApiError, apiFetch } from '$lib/api/http';
 	import { showToast } from '$lib/stores/toast.svelte';
 
@@ -57,10 +59,9 @@
 		<p class="text-sm text-muted">
 			Semua baris harus valid. Bila ada galat, tidak ada data yang disimpan — perbaiki lalu unggah ulang.
 		</p>
-		<input
+		<Input
 			type="file"
 			accept=".csv,text/csv"
-			class="block w-full text-sm"
 			onchange={(e) => {
 				const list = (e.currentTarget as HTMLInputElement).files;
 				file = list?.[0] ?? null;
@@ -80,22 +81,10 @@
 			</div>
 		{/if}
 		<div class="flex justify-end gap-2">
-			<button
-				type="button"
-				class="rounded border border-slate-300 px-3 py-1.5 text-sm"
-				onclick={() => (open = false)}
-				disabled={loading}
-			>
-				Batal
-			</button>
-			<button
-				type="button"
-				class="rounded bg-brand-700 px-3 py-1.5 text-sm text-white disabled:opacity-50"
-				onclick={() => void kirim()}
-				disabled={loading || !file}
-			>
+			<Button variant="outline" onclick={() => (open = false)} disabled={loading}>Batal</Button>
+			<Button onclick={() => void kirim()} disabled={loading || !file}>
 				{loading ? 'Mengunggah…' : 'Unggah'}
-			</button>
+			</Button>
 		</div>
 	</div>
 </Modal>

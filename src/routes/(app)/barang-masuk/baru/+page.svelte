@@ -5,6 +5,9 @@
 	import AsyncCombobox from '$lib/components/form/AsyncCombobox.svelte';
 	import BarangForm from '$lib/components/barang/BarangForm.svelte';
 	import HargaPenerimaan from '$lib/components/barang-masuk/HargaPenerimaan.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { daftarBarang } from '$lib/api/barang';
 	import { buatBarangMasuk } from '$lib/api/barang-masuk';
 	import { ApiError } from '$lib/api/http';
@@ -117,9 +120,9 @@
 </script>
 
 <div class="space-y-4">
-	<a href={resolveAppPath('/barang-masuk')} class="text-sm text-brand-700 underline"
-		>← Daftar barang masuk</a
-	>
+	<Button variant="link" class="h-auto p-0" href={resolveAppPath('/barang-masuk')}>
+		← Daftar barang masuk
+	</Button>
 	<header>
 		<h1 class="font-display text-2xl text-ink">{judulHalaman}</h1>
 		<p class="text-sm text-muted">{subjudul}</p>
@@ -133,7 +136,7 @@
 		}}
 	>
 		<label class="flex items-center gap-2 text-sm text-ink">
-			<input type="checkbox" bind:checked={modeBaru} disabled={!!awalKode} />
+			<Checkbox bind:checked={modeBaru} disabled={!!awalKode} />
 			Buat master barang baru sekaligus
 		</label>
 
@@ -167,53 +170,31 @@
 
 		<div class="grid gap-3 sm:grid-cols-2">
 			<Field label="No. faktur" required forId="faktur" error={errors.no_faktur}>
-				<input
-					id="faktur"
-					class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-					bind:value={noFaktur}
-					required
-				/>
+				<Input id="faktur" bind:value={noFaktur} required />
 			</Field>
 			<Field label="No. batch" required forId="batch" error={errors.no_batch}>
-				<input
-					id="batch"
-					class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-					bind:value={noBatch}
-					required
-				/>
+				<Input id="batch" bind:value={noBatch} required />
 			</Field>
 		</div>
 
 		<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 			<Field label="Tanggal masuk" required forId="tgl">
-				<input
-					id="tgl"
-					type="date"
-					class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-					bind:value={tanggalMasuk}
-					required
-				/>
+				<Input id="tgl" type="date" bind:value={tanggalMasuk} required />
 			</Field>
 			<Field label="Exp" required forId="exp" error={errors.exp}>
-				<input
-					id="exp"
-					type="date"
-					class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-					bind:value={exp}
-					required
-				/>
+				<Input id="exp" type="date" bind:value={exp} required />
 			</Field>
 			<Field label="Qty" required forId="qty" error={errors.qty}>
 				<NumberInput id="qty" min={1} bind:value={qty} required />
 			</Field>
 			<Field label="Aging (bulan)" forId="aging" hint="Otomatis dari tanggal masuk ke exp">
-				<input
+				<Input
 					id="aging"
 					type="text"
 					readonly
-					class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm tabular-nums"
+					class="bg-primary/5 tabular-nums"
 					value={exp ? String(agingBulan) : '—'}
-					tabindex="-1"
+					tabindex={-1}
 				/>
 			</Field>
 		</div>
@@ -231,12 +212,8 @@
 			disabled={menyimpan}
 		/>
 
-		<button
-			type="submit"
-			class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800 disabled:opacity-50"
-			disabled={menyimpan}
-		>
+		<Button type="submit" disabled={menyimpan}>
 			{menyimpan ? 'Menyimpan…' : modeBaru ? 'Simpan barang' : 'Simpan penerimaan'}
-		</button>
+		</Button>
 	</form>
 </div>

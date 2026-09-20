@@ -4,6 +4,9 @@
 	import Combobox from '$lib/components/form/Combobox.svelte';
 	import CurrencyInput from '$lib/components/form/CurrencyInput.svelte';
 	import PercentInput from '$lib/components/form/PercentInput.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import {
 		TIPE_PROMO_OPTIONS,
 		type PromoCreateBody,
@@ -113,9 +116,9 @@
 <form class="grid max-w-xl gap-4" onsubmit={handleSubmit}>
 	{#if mode === 'buat'}
 		<Field label="Kode promo (opsional)" forId="kode" error={errors.kode_promo} hint="Kosongkan untuk generate PROMO+YYYYMM+####">
-			<input
+			<Input
 				id="kode"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
+				class="font-mono"
 				bind:value={kodePromo}
 				disabled={disabled || menyimpan}
 				maxlength={64}
@@ -123,9 +126,8 @@
 		</Field>
 	{/if}
 	<Field label="Nama promo" required forId="nama" error={errors.nama_promo}>
-		<input
+		<Input
 			id="nama"
-			class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 			bind:value={namaPromo}
 			disabled={disabled || menyimpan}
 			required
@@ -185,20 +187,18 @@
 
 	<div class="grid grid-cols-2 gap-3">
 		<Field label="Tanggal mulai" required forId="mulai" error={errors.tanggal_mulai}>
-			<input
+			<Input
 				id="mulai"
 				type="date"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				bind:value={tanggalMulai}
 				disabled={disabled || menyimpan}
 				required
 			/>
 		</Field>
 		<Field label="Tanggal berakhir" required forId="akhir" error={errors.tanggal_berakhir}>
-			<input
+			<Input
 				id="akhir"
 				type="date"
-				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				bind:value={tanggalBerakhir}
 				disabled={disabled || menyimpan}
 				required
@@ -216,12 +216,11 @@
 	</div>
 
 	<Field label="Max applications" forId="maxapp" error={errors.max_applications}>
-		<input
+		<Input
 			id="maxapp"
 			type="number"
 			min="1"
 			inputmode="decimal"
-			class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 			bind:value={maxApplications}
 			disabled={disabled || menyimpan}
 			placeholder="Opsional"
@@ -231,36 +230,32 @@
 		/>
 	</Field>
 	<Field label="Kode barang (opsional)" forId="sku" error={errors.kode_barang}>
-		<input
+		<Input
 			id="sku"
-			class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
+			class="font-mono"
 			bind:value={kodeBarang}
 			disabled={disabled || menyimpan}
 			placeholder="Kosong = semua SKU"
 		/>
 	</Field>
 	<Field label="Deskripsi" forId="desc" error={errors.deskripsi}>
-		<textarea
+		<Textarea
 			id="desc"
-			class="min-h-[56px] w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+			class="min-h-14"
 			bind:value={deskripsi}
 			disabled={disabled || menyimpan}
-		></textarea>
+		/>
 	</Field>
 	<Field label="Syarat & ketentuan" forId="syarat" error={errors.syarat_ketentuan}>
-		<textarea
+		<Textarea
 			id="syarat"
-			class="min-h-[56px] w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+			class="min-h-14"
 			bind:value={syaratKetentuan}
 			disabled={disabled || menyimpan}
-		></textarea>
+		/>
 	</Field>
 
-	<button
-		type="submit"
-		class="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-		disabled={disabled || menyimpan}
-	>
+	<Button type="submit" disabled={disabled || menyimpan}>
 		{menyimpan ? 'Menyimpan…' : mode === 'buat' ? 'Simpan promo' : 'Simpan perubahan'}
-	</button>
+	</Button>
 </form>

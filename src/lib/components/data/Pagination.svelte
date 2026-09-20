@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+
 	interface Props {
 		page?: number;
 		perPage?: number;
@@ -19,31 +22,46 @@
 	const sampai = $derived(Math.min(page * perPage, total));
 </script>
 
-<div class="flex flex-col gap-3 text-sm text-muted sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-	<p>
+<Card.Root
+	class="border-border/80 mt-1 flex flex-col gap-3 px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+	size="sm"
+>
+	<p class="text-muted-foreground text-sm">
 		{#if total === 0}
 			Tidak ada data
 		{:else}
-			Menampilkan {dari} sampai {sampai} dari {total}
+			Menampilkan <span class="text-foreground font-medium tabular-nums">{dari}</span>
+			–
+			<span class="text-foreground font-medium tabular-nums">{sampai}</span>
+			dari
+			<span class="text-foreground font-medium tabular-nums">{total}</span>
 		{/if}
 	</p>
 	<div class="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:flex sm:items-center">
-		<button
+		<Button
 			type="button"
-			class="min-h-11 rounded-md border border-slate-200 bg-white px-3 py-2 disabled:opacity-40 sm:min-h-0 sm:px-2.5 sm:py-1.5"
+			variant="outline"
+			size="sm"
+			class="min-h-11 sm:min-h-8"
 			disabled={page <= 1}
 			onclick={() => onpage?.(page - 1)}
 		>
 			Sebelumnya
-		</button>
-		<span class="text-center tabular-nums text-ink">{page} / {Math.max(totalPages, 1)}</span>
-		<button
+		</Button>
+		<span
+			class="bg-primary/10 text-primary rounded-full px-3 py-1 text-center text-xs font-semibold tabular-nums"
+		>
+			{page} / {Math.max(totalPages, 1)}
+		</span>
+		<Button
 			type="button"
-			class="min-h-11 rounded-md border border-slate-200 bg-white px-3 py-2 disabled:opacity-40 sm:min-h-0 sm:px-2.5 sm:py-1.5"
+			variant="outline"
+			size="sm"
+			class="min-h-11 sm:min-h-8"
 			disabled={page >= totalPages}
 			onclick={() => onpage?.(page + 1)}
 		>
 			Berikutnya
-		</button>
+		</Button>
 	</div>
-</div>
+</Card.Root>

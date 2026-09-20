@@ -1,4 +1,7 @@
 <script lang="ts">
+	import * as Card from '$lib/components/ui/card/index.js';
+	import { cn } from '$lib/utils.js';
+
 	interface Props {
 		label?: string;
 		value?: string;
@@ -8,21 +11,28 @@
 
 	let { label = '', value = '', hint = '', tone = 'netral' }: Props = $props();
 
-	const toneClass = $derived(
-		tone === 'sukses'
-			? 'border-brand-200 bg-brand-50'
-			: tone === 'peringatan'
-				? 'border-amber-200 bg-amber-50'
-				: tone === 'bahaya'
-					? 'border-red-200 bg-red-50'
-					: 'border-slate-200 bg-white'
-	);
+	const toneClass = $derived.by(() => {
+		switch (tone) {
+			case 'netral':
+				return 'border-border/80 bg-card';
+			case 'sukses':
+				return 'border-primary/20 bg-primary/5';
+			case 'peringatan':
+				return 'border-amber-200 bg-amber-50';
+			case 'bahaya':
+				return 'border-destructive/25 bg-destructive/5';
+			default: {
+				const _exhaustive: never = tone;
+				return _exhaustive;
+			}
+		}
+	});
 </script>
 
-<div class="rounded-[var(--radius-card)] border p-4 {toneClass}">
-	<p class="text-xs font-semibold uppercase tracking-wide text-muted">{label}</p>
-	<p class="mt-1 font-display text-2xl text-ink tabular-nums">{value}</p>
+<Card.Root class={cn('gap-0 border p-4 shadow-sm', toneClass)}>
+	<p class="text-muted-foreground text-[0.7rem] font-semibold tracking-wider uppercase">{label}</p>
+	<p class="text-foreground mt-1 font-display text-2xl tabular-nums tracking-tight">{value}</p>
 	{#if hint}
-		<p class="mt-1 text-xs text-muted">{hint}</p>
+		<p class="text-muted-foreground mt-1 text-xs">{hint}</p>
 	{/if}
-</div>
+</Card.Root>

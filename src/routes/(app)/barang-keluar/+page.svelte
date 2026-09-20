@@ -1,9 +1,13 @@
 <script lang="ts">
 	import Pagination from '$lib/components/data/Pagination.svelte';
 	import FilterBar from '$lib/components/data/FilterBar.svelte';
+	import StatCard from '$lib/components/data/StatCard.svelte';
 	import Field from '$lib/components/form/Field.svelte';
 	import Skeleton from '$lib/components/feedback/Skeleton.svelte';
 	import EmptyState from '$lib/components/data/EmptyState.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import * as Table from '$lib/components/ui/table/index.js';
 	import {
 		daftarBarangKeluar,
 		unduhEksporBarangKeluar,
@@ -105,54 +109,36 @@
 			</p>
 		</div>
 		{#if bisaEkspor}
-			<button
-				type="button"
-				class="rounded border border-slate-300 bg-white px-3 py-2 text-sm hover:border-brand-300"
-				onclick={() => void unduh()}
-			>
-				Ekspor CSV
-			</button>
+			<Button variant="outline" onclick={() => void unduh()}>Ekspor CSV</Button>
 		{/if}
 	</header>
 
 	<div class="grid gap-3 sm:grid-cols-2 {lihatLaba ? 'lg:grid-cols-4' : ''}">
-		<div class="rounded border border-slate-200 bg-white px-3 py-2">
-			<p class="text-xs text-slate-500">Total qty keluar</p>
-			<p class="text-lg font-semibold tabular-nums">{ringkasan.total_qty_keluar}</p>
-		</div>
-		<div class="rounded border border-slate-200 bg-white px-3 py-2">
-			<p class="text-xs text-slate-500">Total final</p>
-			<p class="text-lg font-semibold tabular-nums">{formatRupiah(ringkasan.total_final)}</p>
-		</div>
+		<StatCard label="Total qty keluar" value={String(ringkasan.total_qty_keluar)} />
+		<StatCard label="Total final" value={formatRupiah(ringkasan.total_final)} />
 		{#if lihatLaba && ringkasan.total_hpp != null}
-			<div class="rounded border border-slate-200 bg-white px-3 py-2">
-				<p class="text-xs text-slate-500">Total HPP</p>
-				<p class="text-lg font-semibold tabular-nums">{formatRupiah(ringkasan.total_hpp)}</p>
-			</div>
+			<StatCard label="Total HPP" value={formatRupiah(ringkasan.total_hpp)} />
 		{/if}
 		{#if lihatLaba && ringkasan.total_provit != null}
-			<div class="rounded border border-slate-200 bg-white px-3 py-2">
-				<p class="text-xs text-slate-500">Total provit</p>
-				<p class="text-lg font-semibold tabular-nums">{formatRupiah(ringkasan.total_provit)}</p>
-			</div>
+			<StatCard label="Total provit" value={formatRupiah(ringkasan.total_provit)} />
 		{/if}
 	</div>
 
 	<FilterBar onreset={resetFilter}>
-		<Field label="Cari">
-			<input class="input" bind:value={q} placeholder="No trx / pelanggan / item" />
+		<Field label="Cari" forId="bk-q">
+			<Input id="bk-q" class="w-full" bind:value={q} placeholder="No trx / pelanggan / item" />
 		</Field>
-		<Field label="Kode item">
-			<input class="input" bind:value={kodeItem} placeholder="SKU" />
+		<Field label="Kode item" forId="bk-ki">
+			<Input id="bk-ki" class="w-full" bind:value={kodeItem} placeholder="SKU" />
 		</Field>
-		<Field label="Brand">
-			<input class="input" bind:value={brand} placeholder="Brand" />
+		<Field label="Brand" forId="bk-br">
+			<Input id="bk-br" class="w-full" bind:value={brand} placeholder="Brand" />
 		</Field>
-		<Field label="Dari">
-			<input class="input" type="date" bind:value={dateFrom} />
+		<Field label="Dari" forId="bk-df">
+			<Input id="bk-df" class="w-full" type="date" bind:value={dateFrom} />
 		</Field>
-		<Field label="Sampai">
-			<input class="input" type="date" bind:value={dateTo} />
+		<Field label="Sampai" forId="bk-dt">
+			<Input id="bk-dt" class="w-full" type="date" bind:value={dateTo} />
 		</Field>
 	</FilterBar>
 
@@ -161,63 +147,69 @@
 	{:else if rows.length === 0}
 		<EmptyState title="Tidak ada data" description="Belum ada penjualan approved untuk filter ini." />
 	{:else}
-		<div class="overflow-x-auto rounded border border-slate-200">
-			<table class="min-w-full text-left text-sm">
-				<thead class="bg-slate-50 text-xs uppercase text-slate-500">
-					<tr>
-						<th class="px-3 py-2">Tanggal</th>
-						<th class="px-3 py-2">No trx</th>
-						<th class="px-3 py-2">Pelanggan</th>
+		<div class="overflow-hidden rounded-[var(--radius-card)] border border-primary/20 bg-white">
+			<Table.Root>
+				<Table.Header>
+					<Table.Row class="hover:bg-transparent">
+						<Table.Head class="px-3 py-2">Tanggal</Table.Head>
+						<Table.Head class="px-3 py-2">No trx</Table.Head>
+						<Table.Head class="px-3 py-2">Pelanggan</Table.Head>
 						{#if lihatLaba}
-							<th class="px-3 py-2">Alamat</th>
+							<Table.Head class="px-3 py-2">Alamat</Table.Head>
 						{/if}
-						<th class="px-3 py-2">Item</th>
-						<th class="px-3 py-2 text-right">Qty</th>
-						<th class="px-3 py-2 text-right">Promo</th>
-						<th class="px-3 py-2 text-right">Keluar</th>
-						<th class="px-3 py-2 text-right">Final</th>
+						<Table.Head class="px-3 py-2">Item</Table.Head>
+						<Table.Head class="px-3 py-2 text-right">Qty</Table.Head>
+						<Table.Head class="px-3 py-2 text-right">Promo</Table.Head>
+						<Table.Head class="px-3 py-2 text-right">Keluar</Table.Head>
+						<Table.Head class="px-3 py-2 text-right">Final</Table.Head>
 						{#if lihatLaba}
-							<th class="px-3 py-2 text-right">HPP</th>
-							<th class="px-3 py-2 text-right">Provit</th>
-							<th class="px-3 py-2 text-right">Margin %</th>
+							<Table.Head class="px-3 py-2 text-right">HPP</Table.Head>
+							<Table.Head class="px-3 py-2 text-right">Provit</Table.Head>
+							<Table.Head class="px-3 py-2 text-right">Margin %</Table.Head>
 						{/if}
-					</tr>
-				</thead>
-				<tbody>
+					</Table.Row>
+				</Table.Header>
+				<Table.Body>
 					{#each rows as row (row.transaksi_id + '-' + row.kode_item + '-' + row.qty)}
-						<tr class="border-t border-slate-100">
-							<td class="px-3 py-2 tabular-nums">{row.tanggal}</td>
-							<td class="px-3 py-2 font-mono text-xs">{row.no_transaksi ?? '—'}</td>
-							<td class="px-3 py-2">
-								<span class="block text-xs text-slate-500">{row.kode_pelanggan}</span>
+						<Table.Row>
+							<Table.Cell class="px-3 py-2 tabular-nums">{row.tanggal}</Table.Cell>
+							<Table.Cell class="px-3 py-2 font-mono text-xs">{row.no_transaksi ?? '—'}</Table.Cell>
+							<Table.Cell class="px-3 py-2">
+								<span class="block text-xs text-primary/70">{row.kode_pelanggan}</span>
 								{row.nama_pelanggan}
-							</td>
+							</Table.Cell>
 							{#if lihatLaba}
-								<td class="max-w-[12rem] truncate px-3 py-2 text-xs text-slate-600">
+								<Table.Cell class="max-w-[12rem] truncate px-3 py-2 text-xs text-muted-foreground">
 									{row.alamat ?? '—'}
-								</td>
+								</Table.Cell>
 							{/if}
-							<td class="px-3 py-2">
+							<Table.Cell class="px-3 py-2">
 								<span class="block font-mono text-xs">{row.kode_item}</span>
 								{row.nama_item}
-							</td>
-							<td class="px-3 py-2 text-right tabular-nums">{row.qty}</td>
-							<td class="px-3 py-2 text-right tabular-nums">{row.qty_promo}</td>
-							<td class="px-3 py-2 text-right tabular-nums font-medium">{row.total_qty_keluar}</td>
-							<td class="px-3 py-2 text-right tabular-nums">{formatRupiah(row.total_final_baris)}</td>
+							</Table.Cell>
+							<Table.Cell class="px-3 py-2 text-right tabular-nums">{row.qty}</Table.Cell>
+							<Table.Cell class="px-3 py-2 text-right tabular-nums">{row.qty_promo}</Table.Cell>
+							<Table.Cell class="px-3 py-2 text-right font-medium tabular-nums"
+								>{row.total_qty_keluar}</Table.Cell
+							>
+							<Table.Cell class="px-3 py-2 text-right tabular-nums"
+								>{formatRupiah(row.total_final_baris)}</Table.Cell
+							>
 							{#if lihatLaba}
-								<td class="px-3 py-2 text-right tabular-nums">
+								<Table.Cell class="px-3 py-2 text-right tabular-nums">
 									{row.hpp_total ? formatRupiah(row.hpp_total) : '—'}
-								</td>
-								<td class="px-3 py-2 text-right tabular-nums">
+								</Table.Cell>
+								<Table.Cell class="px-3 py-2 text-right tabular-nums">
 									{row.provit ? formatRupiah(row.provit) : '—'}
-								</td>
-								<td class="px-3 py-2 text-right tabular-nums">{row.margin_persen ?? '—'}</td>
+								</Table.Cell>
+								<Table.Cell class="px-3 py-2 text-right tabular-nums"
+									>{row.margin_persen ?? '—'}</Table.Cell
+								>
 							{/if}
-						</tr>
+						</Table.Row>
 					{/each}
-				</tbody>
-			</table>
+				</Table.Body>
+			</Table.Root>
 		</div>
 		<Pagination
 			page={meta.page}
