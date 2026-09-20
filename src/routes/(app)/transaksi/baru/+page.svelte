@@ -6,6 +6,7 @@
 	import PercentInput from '$lib/components/form/PercentInput.svelte';
 	import StokKurangModal from '$lib/components/transaksi/StokKurangModal.svelte';
 	import RiwayatOutletModal from '$lib/components/transaksi/RiwayatOutletModal.svelte';
+	import InfoBatchTerpilih from '$lib/components/transaksi/InfoBatchTerpilih.svelte';
 	import { daftarBarang, batchTersedia, type BatchTersediaItem } from '$lib/api/barang';
 	import { daftarPelanggan, detailPelanggan, type Pelanggan } from '$lib/api/pelanggan';
 	import { daftarPromo } from '$lib/api/promo';
@@ -36,6 +37,9 @@
 		barang_masuk_id: number | null;
 		batchLabel: string;
 		batches: BatchTersediaItem[];
+		metodeAlokasi: string;
+		satuan: string;
+		tampilkanInfo: boolean;
 		promo1: string;
 		promo2: string;
 		promo3: string;
@@ -54,6 +58,9 @@
 			barang_masuk_id: null,
 			batchLabel: '',
 			batches: [],
+			metodeAlokasi: 'FEFO',
+			satuan: 'unit',
+			tampilkanInfo: true,
 			promo1: '',
 			promo2: '',
 			promo3: ''
@@ -153,6 +160,58 @@
 		}));
 	}
 
+	function infoChannel(ch: string) {
+		const mt = ch.toLowerCase().includes('modern trade');
+		return {
+			singkat: mt ? 'MT' : 'GT',
+			penuh: mt ? 'Modern Trade' : 'General Trade'
+		};
+	}
+
+	function batchAktif(row: BarisForm): BatchTersediaItem | null {
+		if (row.barang_masuk_id) {
+			return row.batches.find((b) => b.barang_masuk_id === row.barang_masuk_id) ?? null;
+		}
+		return row.batches[0] ?? null;
+	}
+
+	function terapkanBatch(row: BarisForm, b: BatchTersediaItem) {
+		row.barang_masuk_id = b.barang_masuk_id;
+		row.harga = b.harga_jual;
+		row.batchLabel = `${b.no_batch} · sisa ${b.qty_tersedia} · ${b.sisa_hari}h`;
+	}
+
+	async function muatBatchBaris(idx: number, resetBatch = true) {
+		const row = items[idx];
+		if (!row?.kode_item.trim()) return;
+		try {
+			const res = await batchTersedia(row.kode_item.trim(), {
+				channel: channel || undefined,
+				qty: row.qty || 1
+			});
+			row.batches = res.data.batch ?? [];
+			row.metodeAlokasi = res.data.metode_alokasi ?? 'FEFO';
+			row.satuan = res.data.satuan ?? 'unit';
+			if (resetBatch) {
+				row.barang_masuk_id = null;
+			}
+			const pilih =
+				(row.barang_masuk_id
+					? row.batches.find((b) => b.barang_masuk_id === row.barang_masuk_id)
+					: null) ?? row.batches[0];
+			if (pilih) {
+				terapkanBatch(row, pilih);
+			} else {
+				row.barang_masuk_id = null;
+				row.batchLabel = '';
+			}
+			items = [...items];
+			pratinjau = null;
+		} catch {
+			showToast('Gagal memuat batch', 'bahaya');
+		}
+	}
+
 	async function onPilihBarang(idx: number, opt: { value: string; label: string } | null) {
 		const row = items[idx];
 		if (!row || !opt) return;
@@ -161,34 +220,30 @@
 		row.barang_masuk_id = null;
 		row.batchLabel = '';
 		row.batches = [];
-		try {
-			const res = await batchTersedia(opt.value, {
-				channel: channel || undefined,
-				qty: row.qty || 1
-			});
-			row.batches = res.data.batch ?? [];
-			const first = row.batches[0];
-			if (first) {
-				row.barang_masuk_id = first.barang_masuk_id;
-				row.harga = first.harga_jual;
-				row.batchLabel = `${first.no_batch} · sisa ${first.qty_tersedia} · ${first.sisa_hari}h`;
-			}
-		} catch {
-			showToast('Gagal memuat batch', 'bahaya');
-		}
-		items = [...items];
-		pratinjau = null;
+		await muatBatchBaris(idx);
+	}
+
+	function onQtyBerubah(idx: number) {
+		const row = items[idx];
+		if (!row?.kode_item.trim()) return;
+		void muatBatchBaris(idx, false);
 	}
 
 	function pilihBatch(idx: number, idStr: string) {
 		const row = items[idx];
 		if (!row) return;
+		if (!idStr) {
+			row.barang_masuk_id = null;
+			const first = row.batches[0];
+			if (first) terapkanBatch(row, first);
+			items = [...items];
+			pratinjau = null;
+			return;
+		}
 		const id = Number(idStr);
 		const b = row.batches.find((x) => x.barang_masuk_id === id);
 		if (!b) return;
-		row.barang_masuk_id = b.barang_masuk_id;
-		row.harga = b.harga_jual;
-		row.batchLabel = `${b.no_batch} · sisa ${b.qty_tersedia} · ${b.sisa_hari}h`;
+		terapkanBatch(row, b);
 		items = [...items];
 		pratinjau = null;
 	}
@@ -403,71 +458,161 @@
 		</Field>
 	</section>
 
-	<section class="space-y-3">
+	<section class="space-y-4">
 		<div class="flex items-center justify-between">
-			<h2 class="text-sm font-semibold text-slate-800">Item</h2>
+			<h2 class="text-sm font-semibold text-slate-800">Tambah barang</h2>
 			<button type="button" class="min-h-11 px-1 text-sm text-brand-700 underline md:min-h-0" onclick={tambahBaris}
-				>+ Tambah baris</button
+				>+ Baris item</button
 			>
 		</div>
 
 		{#each items as row, idx (row.key)}
-			<div class="rounded-lg border border-slate-200 p-3 space-y-2">
-				<div class="grid gap-2 md:grid-cols-2 lg:grid-cols-4">
-					<Field label="Produk" required forId={`brg-${idx}`}>
-						<AsyncCombobox
-							id={`brg-${idx}`}
-							bind:value={row.kode_item}
-							placeholder="Cari produk (stok)…"
-							onsearch={cariBarang}
-							onchange={(opt) => void onPilihBarang(idx, opt)}
-						/>
-					</Field>
-					<Field label="Batch" forId={`batch-${idx}`}>
-						<select
-							id={`batch-${idx}`}
-							class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-							value={row.barang_masuk_id ?? ''}
-							onchange={(e) => pilihBatch(idx, (e.currentTarget as HTMLSelectElement).value)}
+			{@const batchInfo = batchAktif(row)}
+			{@const ch = infoChannel(channel)}
+			<div class="rounded-xl border-2 border-dashed border-emerald-200 bg-emerald-50/30 p-4 space-y-3">
+				<header class="space-y-1">
+					<h3 class="flex items-center gap-2 font-semibold text-emerald-900">
+						<span class="text-lg leading-none" aria-hidden="true">+</span>
+						Tambah Barang
+					</h3>
+					<p class="text-xs text-emerald-900/70">
+						Pilih barang dan tambahkan ke transaksi (tidak ada batasan jumlah barang)
+					</p>
+				</header>
+
+				<div class="grid gap-3 lg:grid-cols-12 lg:items-start">
+					<div class="lg:col-span-6">
+						<Field label="Pilih barang" required forId={`brg-${idx}`}>
+							<AsyncCombobox
+								id={`brg-${idx}`}
+								bind:value={row.kode_item}
+								placeholder="Ketik kode barang, nama, atau brand…"
+								onsearch={cariBarang}
+								onchange={(opt) => void onPilihBarang(idx, opt)}
+							/>
+						</Field>
+					</div>
+					<div class="lg:col-span-2">
+						<Field label="Qty" required forId={`qty-${idx}`}>
+							<NumberInput
+								id={`qty-${idx}`}
+								min={1}
+								bind:value={row.qty}
+								onchange={() => onQtyBerubah(idx)}
+							/>
+						</Field>
+					</div>
+					<div class="lg:col-span-4">
+						<Field label="Harga auto" forId={`hrg-${idx}`}>
+							<input
+								id={`hrg-${idx}`}
+								class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-mono text-sm tabular-nums"
+								value={row.harga && row.harga !== '0.00'
+									? formatRupiah(row.harga, { tanpaSimbol: true })
+									: ''}
+								readonly
+								tabindex="-1"
+							/>
+							{#if batchInfo && channel}
+								<p class="mt-1 flex flex-wrap items-center gap-2 text-xs text-emerald-800">
+									<span aria-hidden="true">✓</span>
+									Harga untuk {ch.penuh}: {formatRupiah(batchInfo.harga_jual)}
+									<span
+										class="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase {ch.singkat ===
+										'MT'
+											? 'bg-violet-100 text-violet-800'
+											: 'bg-amber-100 text-amber-800'}"
+									>
+										{ch.singkat} ({ch.penuh})
+									</span>
+								</p>
+							{/if}
+						</Field>
+					</div>
+				</div>
+
+				<div class="flex flex-wrap items-center gap-2">
+					{#if row.batches.length > 1}
+						<label class="flex items-center gap-2 text-xs text-slate-600">
+							<span>Ganti batch:</span>
+							<select
+								class="rounded border border-slate-300 bg-white px-2 py-1 text-xs"
+								value={row.barang_masuk_id ?? ''}
+								onchange={(e) => pilihBatch(idx, (e.currentTarget as HTMLSelectElement).value)}
+							>
+								<option value="">Otomatis {row.metodeAlokasi}</option>
+								{#each row.batches as b (b.barang_masuk_id)}
+									<option value={b.barang_masuk_id}>
+										{b.no_batch} · sisa {b.qty_tersedia}
+									</option>
+								{/each}
+							</select>
+						</label>
+					{/if}
+					{#if batchInfo}
+						<button
+							type="button"
+							class="ml-auto rounded-lg border border-sky-300 bg-sky-50 px-3 py-1.5 text-xs font-medium text-sky-800"
+							onclick={() => {
+								row.tampilkanInfo = !row.tampilkanInfo;
+								items = [...items];
+							}}
 						>
-							<option value="">Otomatis FEFO</option>
-							{#each row.batches as b (b.barang_masuk_id)}
-								<option value={b.barang_masuk_id}>
-									{b.no_batch} · sisa {b.qty_tersedia} · {b.sisa_hari}h · exp {b.exp}
-								</option>
-							{/each}
-						</select>
-						{#if row.batchLabel}
-							<p class="mt-1 text-xs text-slate-500">{row.batchLabel}</p>
-						{/if}
-					</Field>
-					<Field label="Qty" required forId={`qty-${idx}`}>
-						<NumberInput id={`qty-${idx}`} min={1} bind:value={row.qty} />
-					</Field>
-					<Field label="Harga (channel)" forId={`hrg-${idx}`}>
-						<CurrencyInput id={`hrg-${idx}`} bind:value={row.harga} />
-					</Field>
+							{row.tampilkanInfo ? 'Sembunyikan info' : 'Tampilkan info'}
+						</button>
+					{/if}
 				</div>
-				<div class="grid gap-2 md:grid-cols-3 lg:grid-cols-6">
-					<Field label="Disc1 %" forId={`d1-${idx}`}>
-						<PercentInput id={`d1-${idx}`} class="w-full" bind:value={row.disc1} />
-					</Field>
-					<Field label="Disc2 %" forId={`d2-${idx}`}>
-						<PercentInput id={`d2-${idx}`} class="w-full" bind:value={row.disc2} />
-					</Field>
-					<Field label="Disc3 %" forId={`d3-${idx}`}>
-						<PercentInput id={`d3-${idx}`} class="w-full" bind:value={row.disc3} />
-					</Field>
-					<Field label="Promo 1" forId={`p1-${idx}`}>
-						<AsyncCombobox id={`p1-${idx}`} bind:value={row.promo1} placeholder="Kode promo" onsearch={cariPromo} />
-					</Field>
-					<Field label="Promo 2" forId={`p2-${idx}`}>
-						<AsyncCombobox id={`p2-${idx}`} bind:value={row.promo2} placeholder="Opsional" onsearch={cariPromo} />
-					</Field>
-					<Field label="Promo 3" forId={`p3-${idx}`}>
-						<AsyncCombobox id={`p3-${idx}`} bind:value={row.promo3} placeholder="Opsional" onsearch={cariPromo} />
-					</Field>
-				</div>
+
+				{#if batchInfo && row.tampilkanInfo}
+					<InfoBatchTerpilih
+						batch={batchInfo}
+						channel={channel}
+						metodeAlokasi={row.metodeAlokasi}
+						satuan={row.satuan}
+					/>
+				{/if}
+
+				<details class="rounded-lg border border-slate-200 bg-white/80 p-3">
+					<summary class="cursor-pointer text-xs font-medium text-slate-700">
+						Diskon & promo baris
+					</summary>
+					<div class="mt-3 grid gap-2 md:grid-cols-3 lg:grid-cols-6">
+						<Field label="Disc1 %" forId={`d1-${idx}`}>
+							<PercentInput id={`d1-${idx}`} class="w-full" bind:value={row.disc1} />
+						</Field>
+						<Field label="Disc2 %" forId={`d2-${idx}`}>
+							<PercentInput id={`d2-${idx}`} class="w-full" bind:value={row.disc2} />
+						</Field>
+						<Field label="Disc3 %" forId={`d3-${idx}`}>
+							<PercentInput id={`d3-${idx}`} class="w-full" bind:value={row.disc3} />
+						</Field>
+						<Field label="Promo 1" forId={`p1-${idx}`}>
+							<AsyncCombobox
+								id={`p1-${idx}`}
+								bind:value={row.promo1}
+								placeholder="Kode promo"
+								onsearch={cariPromo}
+							/>
+						</Field>
+						<Field label="Promo 2" forId={`p2-${idx}`}>
+							<AsyncCombobox
+								id={`p2-${idx}`}
+								bind:value={row.promo2}
+								placeholder="Opsional"
+								onsearch={cariPromo}
+							/>
+						</Field>
+						<Field label="Promo 3" forId={`p3-${idx}`}>
+							<AsyncCombobox
+								id={`p3-${idx}`}
+								bind:value={row.promo3}
+								placeholder="Opsional"
+								onsearch={cariPromo}
+							/>
+						</Field>
+					</div>
+				</details>
+
 				{#if items.length > 1}
 					<button type="button" class="text-xs text-red-600 underline" onclick={() => hapusBaris(idx)}
 						>Hapus baris</button

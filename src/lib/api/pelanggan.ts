@@ -16,6 +16,36 @@ export const CHANNEL_OUTLET_OPTIONS: { value: ChannelOutlet; label: string }[] =
 	{ value: 'Sub Agen', label: 'Sub Agen' }
 ];
 
+export const JENIS_BANGUNAN_OPTIONS = [
+	{ value: 'Toko', label: 'Toko' },
+	{ value: 'Ruko', label: 'Ruko' },
+	{ value: 'Rumah Toko', label: 'Rumah Toko' },
+	{ value: 'Kios', label: 'Kios' },
+	{ value: 'Minimarket', label: 'Minimarket' },
+	{ value: 'Warung', label: 'Warung' },
+	{ value: 'Gudang', label: 'Gudang' },
+	{ value: 'Pasar', label: 'Pasar' }
+] as const;
+
+export const STATUS_BANGUNAN_OPTIONS = [
+	{ value: 'Milik Sendiri', label: 'Milik Sendiri' },
+	{ value: 'Sewa', label: 'Sewa' },
+	{ value: 'Kontrak', label: 'Kontrak' },
+	{ value: 'Pinjam Pakai', label: 'Pinjam Pakai' }
+] as const;
+
+/** Sisipkan nilai lama (migrasi) bila belum ada di daftar opsi. */
+export function opsiDenganNilaiLama(
+	options: readonly { value: string; label: string }[],
+	current: string
+): { value: string; label: string }[] {
+	const v = current.trim();
+	if (v && !options.some((o) => o.value === v)) {
+		return [{ value: v, label: v }, ...options];
+	}
+	return [...options];
+}
+
 export type Pelanggan = {
 	id: number;
 	kode_pelanggan: string;

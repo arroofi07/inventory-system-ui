@@ -125,6 +125,8 @@ export type BatchTersediaItem = {
 	qty_masuk: number;
 	qty_tersedia: number;
 	harga_jual: string;
+	harga_mt: string;
+	harga_gt: string;
 	hpp_dengan_ppn: string;
 	mendekati_exp: boolean;
 };

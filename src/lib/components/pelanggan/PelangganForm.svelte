@@ -4,6 +4,9 @@
 	import Combobox from '$lib/components/form/Combobox.svelte';
 	import {
 		CHANNEL_OUTLET_OPTIONS,
+		JENIS_BANGUNAN_OPTIONS,
+		STATUS_BANGUNAN_OPTIONS,
+		opsiDenganNilaiLama,
 		type ChannelOutlet,
 		type PelangganCreateBody
 	} from '$lib/api/pelanggan';
@@ -79,6 +82,8 @@
 	let prefixTerakhir = $state('');
 
 	const channelOpts = CHANNEL_OUTLET_OPTIONS.map((o) => ({ value: o.value, label: o.label }));
+	const jenisOpts = $derived(opsiDenganNilaiLama(JENIS_BANGUNAN_OPTIONS, jenisBangunan));
+	const statusOpts = $derived(opsiDenganNilaiLama(STATUS_BANGUNAN_OPTIONS, statusBangunan));
 
 	const prefixOtomatis = $derived(prefixKodePelangganDariNama(namaPelanggan));
 
@@ -351,20 +356,30 @@
 			></textarea>
 		</Field>
 		<Field label="Jenis bangunan" forId="jenis" error={errors.jenis_bangunan}>
-			<input
+			<select
 				id="jenis"
 				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				bind:value={jenisBangunan}
 				disabled={disabled || menyimpan}
-			/>
+			>
+				<option value="">Pilih…</option>
+				{#each jenisOpts as opsi (opsi.value)}
+					<option value={opsi.value}>{opsi.label}</option>
+				{/each}
+			</select>
 		</Field>
 		<Field label="Status bangunan" forId="status-bang" error={errors.status_bangunan}>
-			<input
+			<select
 				id="status-bang"
 				class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
 				bind:value={statusBangunan}
 				disabled={disabled || menyimpan}
-			/>
+			>
+				<option value="">Pilih…</option>
+				{#each statusOpts as opsi (opsi.value)}
+					<option value={opsi.value}>{opsi.label}</option>
+				{/each}
+			</select>
 		</Field>
 		<Field
 			label="Nominal pengambilan pertama"
