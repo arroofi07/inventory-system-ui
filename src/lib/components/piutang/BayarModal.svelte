@@ -5,6 +5,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
 	import { catatPembayaran, type HasilPembayaran, type PiutangItem } from '$lib/api/piutang';
 	import { formatRupiah } from '$lib/domain/format';
 	import { showToast } from '$lib/stores/toast.svelte';
@@ -18,6 +19,14 @@
 
 	let { open = $bindable(false), row, onsukses }: Props = $props();
 
+	const METODE_OPTIONS = [
+		{ value: '', label: 'Pilih…' },
+		{ value: 'Tunai', label: 'Tunai' },
+		{ value: 'Transfer', label: 'Transfer' },
+		{ value: 'Giro', label: 'Giro' },
+		{ value: 'Cek', label: 'Cek' }
+	] as const;
+
 	let nominal = $state('0.00');
 	let tanggal = $state('');
 	let metode = $state('');
@@ -25,6 +34,10 @@
 	let menyimpan = $state(false);
 	let hasil = $state<HasilPembayaran | null>(null);
 	let errorMsg = $state('');
+
+	const metodeTriggerLabel = $derived(
+		METODE_OPTIONS.find((o) => o.value === metode)?.label ?? 'Pilih…'
+	);
 
 	$effect(() => {
 		if (open && row) {
@@ -123,11 +136,16 @@
 					<Input id="bayar-tgl" type="date" bind:value={tanggal} />
 				</Field>
 				<Field label="Metode" forId="bayar-met">
-					<Input
-						id="bayar-met"
-						placeholder="Transfer / tunai…"
-						bind:value={metode}
-					/>
+					<Select.Root type="single" bind:value={metode} disabled={menyimpan}>
+						<Select.Trigger id="bayar-met" class="w-full">
+							{metodeTriggerLabel}
+						</Select.Trigger>
+						<Select.Content>
+							{#each METODE_OPTIONS as opsi (opsi.value || '__empty__')}
+								<Select.Item value={opsi.value} label={opsi.label}>{opsi.label}</Select.Item>
+							{/each}
+						</Select.Content>
+					</Select.Root>
 				</Field>
 				<Field label="Keterangan" forId="bayar-ket">
 					<Textarea id="bayar-ket" rows={2} bind:value={keterangan} />
