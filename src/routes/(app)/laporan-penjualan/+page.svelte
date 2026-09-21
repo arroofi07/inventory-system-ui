@@ -15,6 +15,7 @@
 		type LaporanPenjualanItem,
 		type LaporanPenjualanRingkasan
 	} from '$lib/api/laporan';
+	import { CHANNEL_OUTLET_OPTIONS } from '$lib/api/pelanggan';
 	import type { PageMeta } from '$lib/api/barang';
 	import { formatRupiah } from '$lib/domain/format';
 	import { auth } from '$lib/stores/auth.svelte';
@@ -42,11 +43,7 @@
 
 	const channelOpts = [
 		{ value: '', label: 'Semua channel' },
-		{ value: 'Modern Trade', label: 'Modern Trade' },
-		{ value: 'Modern Trade Independent', label: 'Modern Trade Independent' },
-		{ value: 'General Trade', label: 'General Trade' },
-		{ value: 'General Trade Kosmetik', label: 'General Trade Kosmetik' },
-		{ value: 'Sub Agen', label: 'Sub Agen' }
+		...CHANNEL_OUTLET_OPTIONS.map((o) => ({ value: o.value, label: o.label }))
 	];
 	const bayarOpts = [
 		{ value: '', label: 'Semua bayar' },

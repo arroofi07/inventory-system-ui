@@ -1,8 +1,10 @@
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
+	import { Portal } from 'bits-ui';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { cn } from '$lib/utils.js';
+	import { pasangPanelDropdown } from '$lib/components/form/dropdown-pos';
 
 	type Option = { value: string; label: string };
 	type ComboboxKey = 'ArrowDown' | 'ArrowUp' | 'Enter' | 'Escape';
@@ -25,9 +27,13 @@
 		onchange
 	}: Props = $props();
 
+	const uid = $props.id();
+	const listId = $derived(id ? `${id}-list` : `${uid}-list`);
+
 	let open = $state(false);
 	let query = $state('');
 	let highlight = $state(0);
+	let triggerEl = $state<HTMLDivElement | null>(null);
 
 	const filtered = $derived.by(() => {
 		const q = query.trim().toLowerCase();
@@ -39,12 +45,20 @@
 
 	const selectedLabel = $derived(options.find((o) => o.value === value)?.label ?? '');
 
-	const tutupSaatKlikLuar: Attachment<HTMLDivElement> = (node) => {
-		function onDocClick(e: MouseEvent) {
-			if (!node.contains(e.target as Node)) open = false;
+	const pasangTrigger: Attachment<HTMLDivElement> = (node) => {
+		triggerEl = node;
+		function onDocClick(e: Event) {
+			const t = e.target as Node;
+			if (node.contains(t)) return;
+			const panel = document.getElementById(listId);
+			if (panel?.contains(t)) return;
+			open = false;
 		}
-		window.addEventListener('click', onDocClick);
-		return () => window.removeEventListener('click', onDocClick);
+		window.addEventListener('pointerdown', onDocClick, true);
+		return () => {
+			if (triggerEl === node) triggerEl = null;
+			window.removeEventListener('pointerdown', onDocClick, true);
+		};
 	};
 
 	function pilih(opt: Option) {
@@ -89,7 +103,7 @@
 	}
 </script>
 
-<div class="relative w-full min-w-0" {@attach tutupSaatKlikLuar}>
+<div class="relative w-full min-w-0" {@attach pasangTrigger}>
 	<Input
 		{id}
 		{disabled}
@@ -97,7 +111,7 @@
 		role="combobox"
 		aria-expanded={open}
 		aria-autocomplete="list"
-		aria-controls={id ? `${id}-list` : undefined}
+		aria-controls={listId}
 		class="md:py-2"
 		placeholder={selectedLabel || placeholder}
 		value={open ? query : selectedLabel}
@@ -112,16 +126,20 @@
 		}}
 		onkeydown={onKeydown}
 	/>
-	{#if open && !disabled}
+</div>
+{#if open && !disabled}
+	<Portal>
 		<ul
-			id={id ? `${id}-list` : undefined}
+			id={listId}
 			role="listbox"
-			class="bg-popover text-popover-foreground absolute z-50 mt-1 max-h-[min(16rem,50vh)] w-full overflow-auto rounded-md border py-1 shadow-md"
+			data-combobox-panel
+			class="bg-popover text-popover-foreground fixed z-80 overflow-auto rounded-md border py-1 shadow-md"
+			{@attach triggerEl && pasangPanelDropdown(triggerEl)}
 		>
 			{#if filtered.length === 0}
 				<li class="text-muted-foreground px-3 py-2 text-sm">Tidak ada pilihan</li>
 			{:else}
-				{#each filtered as opt, i (opt.value)}
+				{#each filtered as opt, i (opt.value || '__empty__')}
 					<li role="option" aria-selected={opt.value === value}>
 						<Button
 							type="button"
@@ -130,6 +148,7 @@
 								'h-auto min-h-11 w-full justify-start rounded-none px-3 py-2.5 text-left text-sm',
 								i === highlight && 'bg-primary/10 text-primary'
 							)}
+							onmousedown={(e) => e.preventDefault()}
 							onmouseenter={() => (highlight = i)}
 							onclick={() => pilih(opt)}
 						>
@@ -139,5 +158,5 @@
 				{/each}
 			{/if}
 		</ul>
-	{/if}
-</div>
+	</Portal>
+{/if}

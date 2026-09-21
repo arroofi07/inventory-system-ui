@@ -1,8 +1,10 @@
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
+	import { Portal } from 'bits-ui';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { cn } from '$lib/utils.js';
+	import { pasangPanelDropdown } from '$lib/components/form/dropdown-pos';
 
 	type Option = { value: string; label: string; hint?: string };
 	type ComboboxKey = 'ArrowDown' | 'ArrowUp' | 'Enter' | 'Escape';
@@ -36,13 +38,22 @@
 	let highlight = $state(0);
 	let displayLabel = $state('');
 	let debounce: ReturnType<typeof setTimeout> | undefined;
+	let triggerEl = $state<HTMLDivElement | null>(null);
 
-	const tutupSaatKlikLuar: Attachment<HTMLDivElement> = (node) => {
-		function onDocClick(e: MouseEvent) {
-			if (!node.contains(e.target as Node)) open = false;
+	const pasangTrigger: Attachment<HTMLDivElement> = (node) => {
+		triggerEl = node;
+		function onDocClick(e: Event) {
+			const t = e.target as Node;
+			if (node.contains(t)) return;
+			const panel = document.getElementById(listId);
+			if (panel?.contains(t)) return;
+			open = false;
 		}
-		window.addEventListener('click', onDocClick);
-		return () => window.removeEventListener('click', onDocClick);
+		window.addEventListener('pointerdown', onDocClick, true);
+		return () => {
+			if (triggerEl === node) triggerEl = null;
+			window.removeEventListener('pointerdown', onDocClick, true);
+		};
 	};
 
 	async function muat(q: string) {
@@ -108,7 +119,7 @@
 	}
 </script>
 
-<div class="relative w-full" {@attach tutupSaatKlikLuar}>
+<div class="relative w-full min-w-0" {@attach pasangTrigger}>
 	<Input
 		{id}
 		{disabled}
@@ -128,18 +139,22 @@
 		aria-controls={listId}
 		aria-autocomplete="list"
 	/>
-	{#if open}
+</div>
+{#if open}
+	<Portal>
 		<ul
 			id={listId}
-			class="bg-popover text-popover-foreground absolute z-50 mt-1 max-h-[min(16rem,50vh)] w-full overflow-auto rounded-md border py-1 shadow-md"
+			class="bg-popover text-popover-foreground fixed z-80 overflow-auto rounded-md border py-1 shadow-md"
 			role="listbox"
+			data-combobox-panel
+			{@attach triggerEl && pasangPanelDropdown(triggerEl)}
 		>
 			{#if loading}
 				<li class="text-muted-foreground px-3 py-2 text-sm">Mencari…</li>
 			{:else if options.length === 0}
 				<li class="text-muted-foreground px-3 py-2 text-sm">Tidak ada hasil</li>
 			{:else}
-				{#each options as opt, i (opt.value)}
+				{#each options as opt, i (opt.value || '__empty__')}
 					<li role="option" aria-selected={i === highlight}>
 						<Button
 							type="button"
@@ -149,6 +164,7 @@
 								i === highlight && 'bg-primary/10 text-primary'
 							)}
 							onmousedown={(e) => e.preventDefault()}
+							onmouseenter={() => (highlight = i)}
 							onclick={() => pilih(opt)}
 						>
 							<span class="font-medium">{opt.label}</span>
@@ -160,5 +176,5 @@
 				{/each}
 			{/if}
 		</ul>
-	{/if}
-</div>
+	</Portal>
+{/if}

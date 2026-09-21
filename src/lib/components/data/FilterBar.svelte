@@ -11,8 +11,13 @@
 	let { onreset, children }: Props = $props();
 </script>
 
-<Card.Root class="border-border/80 mb-4 gap-0 py-0 shadow-sm" size="sm">
-	<Card.Content class="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+<Card.Root
+	class="border-border/80 relative z-20 mb-4 gap-0 overflow-visible! py-0 shadow-sm"
+	size="sm"
+>
+	<Card.Content
+		class="grid grid-cols-1 items-end gap-3 overflow-visible p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+	>
 		{@render children()}
 		{#if onreset}
 			<div class="flex items-end">
