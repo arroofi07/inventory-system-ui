@@ -3,6 +3,8 @@
 	import Field from '$lib/components/form/Field.svelte';
 	import Skeleton from '$lib/components/feedback/Skeleton.svelte';
 	import EmptyState from '$lib/components/data/EmptyState.svelte';
+	import BarChart from '$lib/components/chart/BarChart.svelte';
+	import LineChart from '$lib/components/chart/LineChart.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
@@ -71,38 +73,13 @@
 			showToast(e instanceof ApiError ? e.body.message : 'Gagal ekspor', 'bahaya');
 		}
 	}
-
-	const maxChannel = $derived(
-		data ? Math.max(1, ...data.per_channel.map((c) => Number(c.total_penjualan) || 0)) : 1
-	);
-	const maxTren = $derived(
-		data ? Math.max(1, ...data.tren_harian.map((t) => Number(t.total_penjualan) || 0)) : 1
-	);
-
-	function barWidth(nilai: string, max: number): string {
-		const n = Number(nilai) || 0;
-		return `${Math.max(2, Math.round((n / max) * 100))}%`;
-	}
-
-	function linePoints(rows: { total_penjualan: string }[], max: number): string {
-		if (rows.length === 0) return '';
-		const w = 100;
-		const h = 40;
-		return rows
-			.map((r, i) => {
-				const x = rows.length === 1 ? w / 2 : (i / (rows.length - 1)) * w;
-				const y = h - (Math.min(1, (Number(r.total_penjualan) || 0) / max) * (h - 4) + 2);
-				return `${x.toFixed(1)},${y.toFixed(1)}`;
-			})
-			.join(' ');
-	}
 </script>
 
 <div class="space-y-6">
 	<header class="flex flex-wrap items-end justify-between gap-3">
 		<div>
-			<h1 class="font-display text-2xl text-ink">Channel Analytics</h1>
-			<p class="text-sm text-muted">
+			<h1 class="font-display text-2xl text-foreground">Channel Analytics</h1>
+			<p class="text-sm text-muted-foreground">
 				Penjualan approved per channel, territory, produk terlaris, dan tren harian.
 			</p>
 		</div>
@@ -127,50 +104,30 @@
 	{:else}
 		<Card.Root class="gap-0 border border-primary/20 p-4 shadow-none ring-0">
 			<Card.Header class="p-0 pb-3">
-				<Card.Title class="text-sm font-semibold text-ink">Penjualan per channel</Card.Title>
+				<Card.Title class="text-sm font-semibold text-foreground">Penjualan per channel</Card.Title>
 			</Card.Header>
 			<Card.Content class="space-y-2 p-0">
-				{#each data.per_channel as c (c.channel_outlet)}
-					<div>
-						<div class="mb-1 flex justify-between text-sm">
-							<span>{c.channel_outlet}</span>
-							<span class="tabular-nums text-muted">
-								{formatRupiah(c.total_penjualan)} · {c.jumlah_transaksi} trx · {c.jumlah_outlet} outlet
-							</span>
-						</div>
-						<div class="h-2 overflow-hidden rounded bg-primary/10">
-							<div
-								class="h-full rounded bg-brand-600 transition-[width] duration-500"
-								style="width: {barWidth(c.total_penjualan, maxChannel)}"
-							></div>
-						</div>
-					</div>
-				{/each}
+				<BarChart
+					labels={data.per_channel.map((c) => c.channel_outlet)}
+					values={data.per_channel.map((c) => c.total_penjualan)}
+					captions={data.per_channel.map((c) => `${c.jumlah_transaksi} trx · ${c.jumlah_outlet} outlet`)}
+					formatValue={formatRupiah}
+					ariaLabel="Penjualan per channel"
+				/>
 			</Card.Content>
 		</Card.Root>
 
 		<Card.Root class="gap-0 border border-primary/20 p-4 shadow-none ring-0">
 			<Card.Header class="p-0 pb-3">
-				<Card.Title class="text-sm font-semibold text-ink">Tren harian</Card.Title>
+				<Card.Title class="text-sm font-semibold text-foreground">Tren harian</Card.Title>
 			</Card.Header>
 			<Card.Content class="space-y-3 p-0">
-				{#if data.tren_harian.length === 0}
-					<p class="text-sm text-muted">Tidak ada tren.</p>
-				{:else}
-					<svg
-						viewBox="0 0 100 40"
-						class="h-28 w-full overflow-visible rounded border border-primary/20 bg-white p-2"
-						role="img"
-						aria-label="Tren penjualan harian"
-					>
-						<polyline
-							fill="none"
-							stroke="currentColor"
-							stroke-width="0.8"
-							class="text-brand-700"
-							points={linePoints(data.tren_harian, maxTren)}
-						/>
-					</svg>
+				<LineChart
+					labels={data.tren_harian.map((t) => t.tanggal)}
+					values={data.tren_harian.map((t) => t.total_penjualan)}
+					ariaLabel="Tren penjualan harian"
+				/>
+				{#if data.tren_harian.length > 0}
 					<div
 						class="overflow-hidden rounded-[var(--radius-card)] border border-primary/20 bg-white"
 					>
@@ -203,7 +160,7 @@
 
 		<Card.Root class="gap-0 border border-primary/20 p-4 shadow-none ring-0">
 			<Card.Header class="p-0 pb-3">
-				<Card.Title class="text-sm font-semibold text-ink">Per territory</Card.Title>
+				<Card.Title class="text-sm font-semibold text-foreground">Per territory</Card.Title>
 			</Card.Header>
 			<Card.Content class="p-0">
 				<div class="overflow-hidden rounded-[var(--radius-card)] border border-primary/20 bg-white">
@@ -239,7 +196,7 @@
 
 		<Card.Root class="gap-0 border border-primary/20 p-4 shadow-none ring-0">
 			<Card.Header class="p-0 pb-3">
-				<Card.Title class="text-sm font-semibold text-ink">Produk terlaris</Card.Title>
+				<Card.Title class="text-sm font-semibold text-foreground">Produk terlaris</Card.Title>
 			</Card.Header>
 			<Card.Content class="p-0">
 				<div class="overflow-hidden rounded-[var(--radius-card)] border border-primary/20 bg-white">

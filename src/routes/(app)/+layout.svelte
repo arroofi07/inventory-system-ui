@@ -29,7 +29,7 @@
 			'/users': 'Pengguna',
 			'/channel-analytics': 'Channel Analytics',
 			'/laporan-penjualan': 'Laporan Penjualan'
-		};
+		}
 		return labels[path] ?? 'PKB Web';
 	});
 

@@ -1,12 +1,51 @@
 <script lang="ts">
-	import * as Card from '$lib/components/ui/card/index.js';
+	import { maxChart, nilaiChart, persentaseBatang } from './geom';
 
-	// Placeholder chart — diganti library chart di Sprint E.
-	let { labels = [], values = [] }: { labels?: string[]; values?: number[] } = $props();
+	let {
+		labels = [],
+		values = [],
+		captions = [],
+		formatValue = (n: number) => String(n),
+		emptyText = 'Tidak ada data',
+		ariaLabel = 'Grafik batang'
+	}: {
+		labels?: string[];
+		values?: Array<number | string>;
+		captions?: string[];
+		formatValue?: (n: number) => string;
+		emptyText?: string;
+		ariaLabel?: string;
+	} = $props();
+
+	const kosong = $derived(labels.length === 0 || values.length === 0);
+	const max = $derived(maxChart(values));
 </script>
 
-<Card.Root class="gap-0 border border-primary/20 bg-white p-4 shadow-none ring-0">
-	<Card.Content class="p-0 text-sm text-primary/70">
-		Bar chart placeholder ({labels.length} label, {values.length} nilai)
-	</Card.Content>
-</Card.Root>
+{#if kosong}
+	<p class="text-sm text-muted-foreground">{emptyText}</p>
+{:else}
+	<div class="space-y-2" role="img" aria-label={ariaLabel}>
+		{#each labels as label, i (`${label}-${i}`)}
+			{@const nilai = values[i] ?? 0}
+			{@const lebar = persentaseBatang(nilai, max)}
+			{@const caption = captions[i]}
+			<div>
+				<div class="mb-1 flex justify-between gap-3 text-sm text-foreground">
+					<span>{label}</span>
+					<span class="text-right tabular-nums">
+						{formatValue(nilaiChart(nilai))}
+						{#if caption}
+							<span class="text-muted-foreground"> · {caption}</span>
+						{/if}
+					</span>
+				</div>
+				<div class="h-2 overflow-hidden rounded bg-primary/10">
+					<div
+						class="h-full rounded bg-brand-600 transition-[width] duration-500"
+						style:width="{lebar}%"
+					></div>
+				</div>
+			</div>
+		{/each}
+	</div>
+{/if}
