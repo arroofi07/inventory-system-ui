@@ -12,6 +12,7 @@
 	let { open = $bindable(false) }: { open?: boolean } = $props();
 
 	const grupTampil = $derived(auth.user ? filterNavigasi(auth.user.role) : []);
+	const appName = import.meta.env.VITE_APP_NAME ?? 'sistem-barang';
 
 	afterNavigate(() => {
 		open = false;
@@ -21,7 +22,7 @@
 {#snippet brandHeader()}
 	<div class="px-4 py-4">
 		<p class="text-primary font-[family-name:var(--font-display)] text-lg font-bold tracking-tight">
-			PKB Web
+			{appName}
 		</p>
 		{#if auth.user}
 			<p class="text-muted-foreground mt-0.5 truncate text-xs">{auth.user.role}</p>

@@ -30,7 +30,7 @@
 			'/channel-analytics': 'Channel Analytics',
 			'/laporan-penjualan': 'Laporan Penjualan'
 		}
-		return labels[path] ?? 'PKB Web';
+		return labels[path] ?? 'sistem-barang';
 	});
 
 	let navOpen = $state(false);

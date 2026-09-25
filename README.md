@@ -1,6 +1,6 @@
-# PKB Web UI
+# sistem-barang
 
-Frontend SvelteKit (SPA, TypeScript, Tailwind v4) untuk sistem distribusi PKB Web.
+Frontend SvelteKit (SPA, TypeScript, Tailwind v4) untuk sistem-barang.
 
 Struktur mengikuti [docs/02-arsitektur-target.md](../docs/02-arsitektur-target.md) bagian 4, dengan penyesuaian route dari [docs/07-frontend-svelte.md](../docs/07-frontend-svelte.md): **satu grup `(app)`** (bukan `(admin)`/`(sales)` terpisah) agar URL tidak bentrok.
 

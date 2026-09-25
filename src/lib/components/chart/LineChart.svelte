@@ -28,7 +28,7 @@
 			viewBox="0 0 100 40"
 			class="h-28 w-full overflow-visible"
 			role="img"
-			aria-label={ariaLabel}
+			aria-label={ariaLabel}  
 		>
 			<path d={area} class="fill-brand-600/20" />
 			<polyline

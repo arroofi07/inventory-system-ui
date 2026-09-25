@@ -6,7 +6,7 @@
 	import { pergiKe } from '$lib/nav';
 	import { auth } from '$lib/stores/auth.svelte';
 
-	const appName = import.meta.env.VITE_APP_NAME ?? 'PKB Web';
+	const appName = import.meta.env.VITE_APP_NAME ?? 'sistem-barang';
 
 	let email = $state('');
 	let password = $state('');
